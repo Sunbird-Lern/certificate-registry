@@ -10,4 +10,4 @@ RUN chown -R sunbird:sunbird /home/sunbird
 USER sunbird
 EXPOSE 9000
 WORKDIR /home/sunbird/
-CMD java -XX:+PrintFlagsFinal $JAVA_OPTIONS -cp '/home/sunbird/service-1.0.0-SNAPSHOT/lib/*' play.core.server.ProdServerStart  /home/sunbird/service-1.0.0-SNAPSHOT
+CMD java -XX:+PrintFlagsFinal $JAVA_OPTIONS -Dlog4j2.formatMsgNoLookups=true -cp '/home/sunbird/service-1.0.0-SNAPSHOT/lib/*' play.core.server.ProdServerStart  /home/sunbird/service-1.0.0-SNAPSHOT
