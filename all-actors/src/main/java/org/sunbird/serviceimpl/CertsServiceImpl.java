@@ -1,6 +1,7 @@
 package org.sunbird.serviceimpl;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.sunbird.BaseException;
 import org.sunbird.CertVars;
 import org.sunbird.JsonKeys;
+import org.sunbird.RegistryCredential;
 import org.sunbird.builders.Certificate;
 import org.sunbird.builders.Recipient;
 import org.sunbird.message.IResponseMessage;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
@@ -205,7 +208,7 @@ public class CertsServiceImpl implements ICertService {
                 String signedUrl=jsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.SIGNED_URL);
                 response.put(JsonKeys.SIGNED_URL,signedUrl);
             } else {
-                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.INVALID_PROVIDED_URL,null),(String)request.getRequest().get(JsonKeys.PDF_URL)), ResponseCode.CLIENT_ERROR.getCode());
+                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.INVALID_PROVIDED_URL, null), (String) request.getRequest().get(JsonKeys.PDF_URL)), ResponseCode.CLIENT_ERROR.getCode());
             }
 
         } catch (Exception e) {
@@ -216,17 +219,17 @@ public class CertsServiceImpl implements ICertService {
     }
 
     @Override
-    public Response downloadV2(Request request) throws BaseException {
+    public Response downloadV2(Request request) throws BaseException, ExecutionException, InterruptedException {
         String certId = (String) request.getRequest().get(JsonKeys.ID);
         logger.info("CertServiceImpl:downloadV2:idProvided:" + certId);
         Response certData = CertificateUtil.getCertRecordByID(certId);
         Response response = new Response();
         List<Map<String, Object>> resultList = (List<Map<String, Object>>) certData.getResult().get(JsonKeys.RESPONSE);
+        String printUri;
         if (CollectionUtils.isNotEmpty(resultList) && MapUtils.isNotEmpty(resultList.get(0))) {
             Map<String, Object> certInfo = resultList.get(0);
             try {
                 String jsonUrl = (String) certInfo.get(JsonKeys.JSON_URL);
-                String printUri;
                 //in-some cases jsonUrl was not filled(1.5.0 prior to fix), After fix jsonUrl is being filled (because of svg content growth,now we are uploading cert to cloud)
                 if (StringUtils.isEmpty(jsonUrl)) {
                     logger.info("getJsonSignedUrl: jsonUrl is empty , print uri is present in data object");
@@ -246,8 +249,25 @@ public class CertsServiceImpl implements ICertService {
                 throw new BaseException(IResponseMessage.INTERNAL_ERROR, getLocalizedMessage(IResponseMessage.INTERNAL_ERROR, null), ResponseCode.SERVER_ERROR.getCode());
             }
         } else {
-            throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("Accept", "application/vc+ld+json");
+            String rcTemplateApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
+            Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcTemplateApi,headerMap);
+            HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
+            if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
+                String templateUrl = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString("templateurl");
+                String rcDownloadApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
+                headerMap.put("Accept", "image/svg+xml");
+                headerMap.put("templateurl", templateUrl);
+                Future<HttpResponse<JsonNode>> rcDownloadResFuture=CertificateUtil.makeAsyncGetCall(rcDownloadApi,headerMap);
+                HttpResponse<JsonNode> rcDownloadJsonResponse = rcDownloadResFuture.get();
+                printUri =  rcDownloadJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.PRINT_URI);
+                response.put(JsonKeys.PRINT_URI, printUri);
+            } else {
+                throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+            }
         }
+        
         return response;
     }
 
