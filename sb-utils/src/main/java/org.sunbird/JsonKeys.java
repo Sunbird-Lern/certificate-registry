@@ -75,5 +75,6 @@ public class JsonKeys {
     public static final String REQ_ID ="reqId";
     public static final String REQUEST_MESSAGE_ID = "msgId";
     public static final String X_REQUEST_ID = "X-Request-ID";
-
+  
+  public static final String FILTERS = "filters";
 }

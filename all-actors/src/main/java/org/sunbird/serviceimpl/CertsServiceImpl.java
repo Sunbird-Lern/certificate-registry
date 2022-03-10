@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import org.apache.commons.collections.CollectionUtils;
@@ -32,10 +33,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -399,16 +397,43 @@ public class CertsServiceImpl implements ICertService {
             logger.info("CertsServiceImpl:search:request body found.");
             String apiToCall = CertVars.getEsSearchUri();
             logger.info("CertsServiceImpl:search:complete url found:" + apiToCall);
+    
+            String rcSearchApiCall = RegistryCredential.getEsSearchUri();
+            logger.info("RegistryCredential:search:complete url found:" + rcSearchApiCall);
             Future<HttpResponse<JsonNode>> responseFuture = CertificateUtil.makeAsyncPostCall(apiToCall, requestBody, headerMap);
             HttpResponse<JsonNode> jsonResponse = responseFuture.get();
+            ESResponseMapper mappedResponse = null;
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
                 String jsonArray = jsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
-                Map<String,Object> apiResp=requestMapper.readValue(jsonArray,Map.class);
-                ESResponseMapper mappedResponse = new ObjectMapper().convertValue(apiResp,ESResponseMapper.class);
-                response.put(JsonKeys.RESPONSE, mappedResponse);
+                Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
+                mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
+            }
+            Map<String, Object> req = request.getRequest();
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonNode = mapper.convertValue(req, ObjectNode.class);
+            ObjectNode jsonNode1 = (ObjectNode) jsonNode.at("/query/match_phrase/");
+            Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = jsonNode1.fields();
+            Map<String, Object> filters = new HashMap<>();
+            Map<String, Object> fieldKeyMap = new HashMap<>();
+            fields.forEachRemaining(field -> {
+                Map<String, Object> fieldValueMap = new HashMap<>();
+                fieldValueMap.put("eq", field.getValue().asText());
+                fieldKeyMap.put(field.getKey(), fieldValueMap);
+            });
+            filters.put(JsonKeys.FILTERS, fieldKeyMap);
+            Future<HttpResponse<JsonNode>> rcResponseFuture = CertificateUtil.makeAsyncPostCall(rcSearchApiCall, requestBody, headerMap);
+            HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
+            if ((mappedResponse !=null && rcJsonResponse != null) && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
+                String rcJsonArray = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
+                Map<String, Object> rcSearchApiResp = requestMapper.readValue(rcJsonArray, Map.class);
+                ESResponseMapper rcmappedResponse = new ObjectMapper().convertValue(rcSearchApiResp, ESResponseMapper.class);
+                mappedResponse.setCount(mappedResponse.getCount() + rcmappedResponse.getCount());
+                mappedResponse.getContent().addAll(rcmappedResponse.getContent());
             } else {
                 throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
+            response.put(JsonKeys.RESPONSE, mappedResponse);
+            
         } catch (Exception e) {
             logger.error("CertsServiceImpl:search:exception occurred:" + e);
             throw new BaseException(IResponseMessage.INTERNAL_ERROR, IResponseMessage.INTERNAL_ERROR, ResponseCode.SERVER_ERROR.getCode());
