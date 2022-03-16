@@ -1,6 +1,7 @@
 package org.sunbird.actor;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sunbird.BaseActor;
 import org.sunbird.BaseException;
 import org.sunbird.JsonKeys;
@@ -11,6 +12,7 @@ import org.sunbird.serviceimpl.CertsServiceImpl;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.concurrent.ExecutionException;
 
 public class CertificationActor extends BaseActor {
     private ICertService certService = getCertServiceImpl();
@@ -25,7 +27,7 @@ public class CertificationActor extends BaseActor {
     }
 
     @Override
-    public void onReceive(Request request) throws BaseException {
+    public void onReceive(Request request) throws BaseException, InterruptedException, ExecutionException, JsonProcessingException {
         logger.info("CertificationActor:onReceive:request arrived with operation" + request.getOperation());
         String operation = request.getOperation();
         switch (operation) {
@@ -55,6 +57,9 @@ public class CertificationActor extends BaseActor {
                 break;
             case "downloadV2" :
                 downloadV2(request);
+                break;
+            case "searchV2":
+                searchV2(request);
                 break;
             default:
                 onReceiveUnsupportedMessage("CertificationActor");
@@ -91,6 +96,10 @@ public class CertificationActor extends BaseActor {
     }
     private void search(Request request) throws BaseException{
         sender().tell(certService.search(request),self());
+    }
+    
+    private void searchV2(Request request) throws BaseException{
+        sender().tell(certService.searchV2(request),self());
     }
 
     private void downloadV2(Request request) throws BaseException {

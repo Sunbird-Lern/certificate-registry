@@ -24,7 +24,7 @@ public interface ICertService{
 
     Response download(Request request) throws BaseException;
 
-    Response downloadV2(Request request) throws BaseException, JsonProcessingException, ExecutionException, InterruptedException;
+    Response downloadV2(Request request) throws BaseException;
 
     Response generate(Request request) throws BaseException;
 
@@ -33,5 +33,7 @@ public interface ICertService{
     Response read(Request request) throws  BaseException;
 
     Response search(Request request) throws BaseException;
+    
+    Response searchV2(Request request) throws BaseException;
 
 }

@@ -58,6 +58,7 @@ public class JsonKeys {
     public static final String OLD_ID="oldId";
     public static final String READ = "read";
     public static final String SEARCH = "search";
+    public static final String SEARCH_V2 = "searchV2";
     public static final String HITS ="hits";
     public static final String CERT_ALIAS ="certs";
     public static final String READ_CERT_META_DATA = "readCertMetaData";
