@@ -31,7 +31,7 @@ node('build-slave') {
                 sh 'mvn clean install'
             }
             stage('Package') {
-		// Create a deployment package
+		// Create a deployment packageCertificationActor
                 dir('service') {
                     sh 'mvn play2:dist'
 		    sh 'cp target/service-1.0.0-SNAPSHOT-dist.zip ../'

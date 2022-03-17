@@ -2,9 +2,12 @@ package org.sunbird.service;
 
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sunbird.BaseException;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * this is an interface class for implementing certificate related operations
@@ -30,5 +33,7 @@ public interface ICertService{
     Response read(Request request) throws  BaseException;
 
     Response search(Request request) throws BaseException;
+    
+    Response searchV2(Request request) throws BaseException;
 
 }

@@ -20,10 +20,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.ActorOperations;
-import org.sunbird.BaseException;
-import org.sunbird.CertVars;
-import org.sunbird.JsonKeys;
+import org.sunbird.*;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.cassandraimpl.CassandraDACImpl;
 import org.sunbird.common.ElasticSearchRestHighImpl;
@@ -62,6 +59,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
         CassandraOperation.class,
         CassandraDACImpl.class,
         CertVars.class,
+        RegistryCredential.class,
         IOUtils.class,
         URL.class})
 @PowerMockIgnore({"javax.management.*", "jdk.internal.reflect.*"})
@@ -78,6 +76,7 @@ public class CertificationActorTest {
     JSONObject object2 = null;
     public void beforeTestSetUp() throws Exception {
         PowerMockito.mockStatic(CertVars.class);
+        PowerMockito.mockStatic(RegistryCredential.class);
         PowerMockito.mockStatic(EsClientFactory.class);
         ElasticSearchRestHighImpl elasticSearchRestHigh = PowerMockito.mock(ElasticSearchRestHighImpl.class);
         PowerMockito.whenNew(ElasticSearchRestHighImpl.class).withNoArguments().thenReturn(elasticSearchRestHigh);
@@ -99,6 +98,9 @@ public class CertificationActorTest {
         when(CertVars.getSERVICE_BASE_URL()).thenReturn("service_base_url");
         when(CertVars.getDOWNLOAD_URI()).thenReturn("download_url");
         when(CertVars.getEsSearchUri()).thenReturn("es_search_uri");
+        when(RegistryCredential.getSERVICE_BASE_URL()).thenReturn("service_base_url");
+        when(RegistryCredential.getDOWNLOAD_URI()).thenReturn("download_url");
+        when(RegistryCredential.getRCSearchUri()).thenReturn("es_search_uri");
         final Future<HttpResponse<JsonNode>> mockedFuture = Mockito.mock(Future.class);
         when(CertificateUtil.makeAsyncPostCall(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(mockedFuture);
         final HttpResponse<JsonNode> mockedResponse = Mockito.mock(HttpResponse.class);
@@ -116,6 +118,10 @@ public class CertificationActorTest {
         String signedUrl ="http://localhost:9000/dev-e-credentials/0125450863553740809/4d88c2e4-212b-4c00-aa83-1cd3fde7b447.json";
         when(object2.getString(JsonKeys.SIGNED_URL)).thenReturn(signedUrl);
         when(object2.get(JsonKeys.RESPONSE)).thenReturn(map);
+    
+        final Future<HttpResponse<JsonNode>> mockedGetFuture = Mockito.mock(Future.class);
+        when(CertificateUtil.makeAsyncGetCall(Mockito.anyString(),Mockito.anyMap())).thenReturn(mockedGetFuture);
+        when(mockedGetFuture.get()).thenReturn(null);
         when(certsService.download(Mockito.any(Request.class))).thenReturn(getValidateCertResponse());
         when(CertificateUtil.getCertificate(Mockito.anyString())).thenReturn(map);
 
@@ -191,7 +197,7 @@ public class CertificationActorTest {
     @Test
     public void testSearchCertificate() throws Exception {
         Request request = createDownloadCertRequest();
-        request.setOperation(ActorOperations.SEARCH.getOperation());
+        request.setOperation(ActorOperations.SEARCHV2.getOperation());
         beforeTestSetUp();
         TestKit testKit = new TestKit(system);
         ActorRef actorRef = system.actorOf(props);

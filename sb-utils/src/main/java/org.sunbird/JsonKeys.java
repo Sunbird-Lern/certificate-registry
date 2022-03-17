@@ -58,6 +58,7 @@ public class JsonKeys {
     public static final String OLD_ID="oldId";
     public static final String READ = "read";
     public static final String SEARCH = "search";
+    public static final String SEARCH_V2 = "searchV2";
     public static final String HITS ="hits";
     public static final String CERT_ALIAS ="certs";
     public static final String READ_CERT_META_DATA = "readCertMetaData";
@@ -75,5 +76,14 @@ public class JsonKeys {
     public static final String REQ_ID ="reqId";
     public static final String REQUEST_MESSAGE_ID = "msgId";
     public static final String X_REQUEST_ID = "X-Request-ID";
-
+    public static final String ACCEPT = "Accept";
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String IMAGE_SVG_XML = "image/svg+xml";
+    public static final String APPLICATION_VC_LD_JSON = "application/vc+ld+json";
+    public static final String TEMPLATE_URL = "templateUrl";
+    public static final String REGISTRY_CREDENTIAL_SERVICE_BASE_URL= "registry_credential_service_base_url";
+    public static final String RC_ENTITY = "rc_entity";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String QUERY_MATCH_PHRASE = "/query/match_phrase";
+  public static final String FILTERS = "filters";
 }

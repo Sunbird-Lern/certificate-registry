@@ -128,7 +128,24 @@ public class CertificateUtil {
                     .asJsonAsync();
             return jsonResponse;
         }
-
+    
+    public static Future<HttpResponse<String>> makeAsyncGetCallString(String apiToCall, Map<String,String>headerMap){
+        logger.info("CertificateUtil:makePostCall:get request to make post call for API:"+apiToCall);
+        Future<HttpResponse<String>> jsonResponse
+          = Unirest.get(apiToCall)
+          .headers(headerMap)
+          .asStringAsync();
+        return jsonResponse;
+    }
+    
+    public static Future<HttpResponse<JsonNode>> makeAsyncGetCall(String apiToCall, Map<String,String>headerMap){
+        logger.info("CertificateUtil:makePostCall:get request to make post call for API:"+apiToCall);
+        Future<HttpResponse<JsonNode>> jsonResponse
+          = Unirest.get(apiToCall)
+          .headers(headerMap)
+          .asJsonAsync();
+        return jsonResponse;
+    }
     private static String getLocalizedMessage(String key, Locale locale){
         return localizer.getMessage(key, locale);
     }

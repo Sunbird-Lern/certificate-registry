@@ -150,5 +150,16 @@ public class CertificateController extends BaseController {
                     return null;
                 }, JsonKeys.SEARCH);
     }
+  
+  public CompletionStage<Result> searchV2(Http.Request httpRequest)
+  {
+    IRequestValidator requestValidator=new CertSearchRequestValidator();
+    return handleRequest(certificationActorRef, httpRequest,
+      request -> {
+        Request req = (Request) request;
+        requestValidator.validate(req);
+        return null;
+      }, JsonKeys.SEARCH_V2);
+  }
 
 }

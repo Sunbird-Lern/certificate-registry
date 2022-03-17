@@ -16,7 +16,7 @@ GET  /certs/v2/registry/download/:id                     @controllers.Certificat
 POST  /certs/v1/registry/verify                       @controllers.CertificateController.verify(request: play.mvc.Http.Request)
 GET  /certs/v1/registry/read/:id                      @controllers.CertificateController.read(id:String, request: play.mvc.Http.Request)
 POST  /certs/v1/registry/search                       @controllers.CertificateController.search(request: play.mvc.Http.Request)
-POST  /certs/v2/registry/search                       @controllers.CertificateController.search(request: play.mvc.Http.Request)
+POST  /certs/v2/registry/search                       @controllers.CertificateController.searchV2(request: play.mvc.Http.Request)
 
 
 
