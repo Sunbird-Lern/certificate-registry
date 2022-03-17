@@ -116,6 +116,10 @@ public class CertificationActorTest {
         String signedUrl ="http://localhost:9000/dev-e-credentials/0125450863553740809/4d88c2e4-212b-4c00-aa83-1cd3fde7b447.json";
         when(object2.getString(JsonKeys.SIGNED_URL)).thenReturn(signedUrl);
         when(object2.get(JsonKeys.RESPONSE)).thenReturn(map);
+    
+        final Future<HttpResponse<JsonNode>> mockedGetFuture = Mockito.mock(Future.class);
+        when(CertificateUtil.makeAsyncGetCall(Mockito.anyString(),Mockito.anyMap())).thenReturn(mockedGetFuture);
+        when(mockedGetFuture.get()).thenReturn(null);
         when(certsService.download(Mockito.any(Request.class))).thenReturn(getValidateCertResponse());
         when(CertificateUtil.getCertificate(Mockito.anyString())).thenReturn(map);
 
@@ -191,7 +195,7 @@ public class CertificationActorTest {
     @Test
     public void testSearchCertificate() throws Exception {
         Request request = createDownloadCertRequest();
-        request.setOperation(ActorOperations.SEARCH.getOperation());
+        request.setOperation(ActorOperations.SEARCHV2.getOperation());
         beforeTestSetUp();
         TestKit testKit = new TestKit(system);
         ActorRef actorRef = system.actorOf(props);
