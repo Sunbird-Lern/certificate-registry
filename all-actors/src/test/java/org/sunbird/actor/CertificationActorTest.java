@@ -20,10 +20,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.ActorOperations;
-import org.sunbird.BaseException;
-import org.sunbird.CertVars;
-import org.sunbird.JsonKeys;
+import org.sunbird.*;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.cassandraimpl.CassandraDACImpl;
 import org.sunbird.common.ElasticSearchRestHighImpl;
@@ -62,6 +59,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
         CassandraOperation.class,
         CassandraDACImpl.class,
         CertVars.class,
+        RegistryCredential.class,
         IOUtils.class,
         URL.class})
 @PowerMockIgnore({"javax.management.*", "jdk.internal.reflect.*"})
@@ -78,6 +76,7 @@ public class CertificationActorTest {
     JSONObject object2 = null;
     public void beforeTestSetUp() throws Exception {
         PowerMockito.mockStatic(CertVars.class);
+        PowerMockito.mockStatic(RegistryCredential.class);
         PowerMockito.mockStatic(EsClientFactory.class);
         ElasticSearchRestHighImpl elasticSearchRestHigh = PowerMockito.mock(ElasticSearchRestHighImpl.class);
         PowerMockito.whenNew(ElasticSearchRestHighImpl.class).withNoArguments().thenReturn(elasticSearchRestHigh);
@@ -99,6 +98,9 @@ public class CertificationActorTest {
         when(CertVars.getSERVICE_BASE_URL()).thenReturn("service_base_url");
         when(CertVars.getDOWNLOAD_URI()).thenReturn("download_url");
         when(CertVars.getEsSearchUri()).thenReturn("es_search_uri");
+        when(RegistryCredential.getSERVICE_BASE_URL()).thenReturn("service_base_url");
+        when(RegistryCredential.getDOWNLOAD_URI()).thenReturn("download_url");
+        when(RegistryCredential.getRCSearchUri()).thenReturn("es_search_uri");
         final Future<HttpResponse<JsonNode>> mockedFuture = Mockito.mock(Future.class);
         when(CertificateUtil.makeAsyncPostCall(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(mockedFuture);
         final HttpResponse<JsonNode> mockedResponse = Mockito.mock(HttpResponse.class);
