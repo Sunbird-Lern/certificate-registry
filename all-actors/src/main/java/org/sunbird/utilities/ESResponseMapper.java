@@ -19,6 +19,8 @@ public class ESResponseMapper {
         this.content = content;
         this.count = count;
     }
+    
+    public ESResponseMapper() {}
 
     public List<Map<String, Object>> getContent() {
         return content;

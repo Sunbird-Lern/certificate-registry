@@ -247,20 +247,19 @@ public class CertsServiceImpl implements ICertService {
             }
         } else {
             Map<String, String> headerMap = new HashMap<>();
-            headerMap.put("Accept", "ap" +
-              "plication/vc+ld+json");
+            headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_VC_LD_JSON);
             String rcTemplateApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcTemplateApi,headerMap);
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
                 if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
-                    String templateUrl = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString("templateurl");
+                    String templateUrl = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.TEMPLATE_URL);
                     String rcDownloadApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI()) + "/" + certId;
-                    headerMap.put("Accept", "image/svg+xml");
+                    headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("templateurl", templateUrl);
-                    Future<HttpResponse<JsonNode>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCall(rcDownloadApi, headerMap);
-                    HttpResponse<JsonNode> rcDownloadJsonResponse = rcDownloadResFuture.get();
-                    printUri = rcDownloadJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.PRINT_URI);
+                    Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcDownloadApi, headerMap);
+                    HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
+                    printUri = rcDownloadJsonResponse.getBody();
                     response.put(JsonKeys.PRINT_URI, printUri);
                 } else {
                     throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
@@ -397,27 +396,16 @@ public class CertsServiceImpl implements ICertService {
     public Response search(Request request) throws BaseException{
         Response response = new Response();
         Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("Content-Type", "application/json");
+        ObjectMapper mapper = new ObjectMapper();
+        headerMap.put(JsonKeys.CONTENT_TYPE, JsonKeys.APPLICATION_JSON);
         try {
-            String requestBody = requestMapper.writeValueAsString(request.getRequest());
-            logger.info("CertsServiceImpl:search:request body found.");
-            String apiToCall = CertVars.getEsSearchUri();
-            logger.info("CertsServiceImpl:search:complete url found:" + apiToCall);
-    
+            ESResponseMapper mappedResponse = null;
+            mappedResponse = searchEsPostCall(request);
             String rcSearchApiCall = RegistryCredential.getRCSearchUri();
             logger.info("RegistryCredential:rcSearchApiCall:complete url found:" + rcSearchApiCall);
-            Future<HttpResponse<JsonNode>> responseFuture = CertificateUtil.makeAsyncPostCall(apiToCall, requestBody, headerMap);
-            HttpResponse<JsonNode> jsonResponse = responseFuture.get();
-            ESResponseMapper mappedResponse = null;
-            if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
-                String jsonArray = jsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
-                Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
-                mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
-            }
             Map<String, Object> req = request.getRequest();
-            ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonNode = mapper.convertValue(req, ObjectNode.class);
-            ObjectNode jsonNode1 = (ObjectNode) jsonNode.at("/query/match_phrase/");
+            ObjectNode jsonNode1 = (ObjectNode) jsonNode.at(JsonKeys.QUERY_MATCH_PHRASE);
             Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = jsonNode1.fields();
             Map<String, Object> filters = new HashMap<>();
             Map<String, Object> fieldKeyMap = new HashMap<>();
@@ -427,16 +415,22 @@ public class CertsServiceImpl implements ICertService {
                 fieldKeyMap.put(field.getKey(), fieldValueMap);
             });
             filters.put(JsonKeys.FILTERS, fieldKeyMap);
-            Future<HttpResponse<JsonNode>> rcResponseFuture = CertificateUtil.makeAsyncPostCall(rcSearchApiCall, requestBody, headerMap);
+            String filterString = mapper.writeValueAsString(filters);
+            Future<HttpResponse<JsonNode>> rcResponseFuture = CertificateUtil.makeAsyncPostCall(rcSearchApiCall, filterString, headerMap);
             HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
-            if ((mappedResponse != null && rcJsonResponse != null) && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
-                String rcJsonArray = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
-                Map<String, Object> rcSearchApiResp = requestMapper.readValue(rcJsonArray, Map.class);
-                ESResponseMapper rcmappedResponse = new ObjectMapper().convertValue(rcSearchApiResp, ESResponseMapper.class);
-                mappedResponse.setCount(mappedResponse.getCount() + rcmappedResponse.getCount());
-                mappedResponse.getContent().addAll(rcmappedResponse.getContent());
+            if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
+                String rcJsonArray = rcJsonResponse.getBody().getArray().toString();
+                List<Map<String, Object>> rcSearchApiResp = requestMapper.readValue(rcJsonArray, List.class);
+                if(mappedResponse != null) {
+                    mappedResponse.setCount(mappedResponse.getCount() + rcSearchApiResp.size());
+                    mappedResponse.getContent().addAll(rcSearchApiResp);
+                } else {
+                    mappedResponse = new ESResponseMapper();
+                    mappedResponse.setCount(rcSearchApiResp.size());
+                    mappedResponse.setContent(rcSearchApiResp);
+                }
             } else {
-                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
+                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,rcJsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
             response.put(JsonKeys.RESPONSE, mappedResponse);
             
@@ -450,6 +444,13 @@ public class CertsServiceImpl implements ICertService {
     @Override
     public Response searchV2(Request request) throws BaseException{
         Response response = new Response();
+        ESResponseMapper mappedResponse = searchEsPostCall(request);
+        response.put(JsonKeys.RESPONSE, mappedResponse);
+        return response;
+    }
+    
+    private ESResponseMapper searchEsPostCall(Request request) throws BaseException {
+        ESResponseMapper mappedResponse = null;
         try {
             String requestBody = requestMapper.writeValueAsString(request.getRequest());
             logger.info("CertsServiceImpl:search:request body found.");
@@ -460,15 +461,14 @@ public class CertsServiceImpl implements ICertService {
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
                 String jsonArray = jsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
                 Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
-                ESResponseMapper mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
-                response.put(JsonKeys.RESPONSE, mappedResponse);
+                mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
             } else {
-                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
+                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
         } catch (Exception e) {
             logger.error("CertsServiceImpl:search:exception occurred:" + e);
             throw new BaseException(IResponseMessage.INTERNAL_ERROR, IResponseMessage.INTERNAL_ERROR, ResponseCode.SERVER_ERROR.getCode());
         }
-        return response;
+        return mappedResponse;
     }
 }

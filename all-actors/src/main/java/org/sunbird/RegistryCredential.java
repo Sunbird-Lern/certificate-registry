@@ -9,11 +9,10 @@ import org.slf4j.LoggerFactory;
  * @author anmolgupta
  */
 public class RegistryCredential {
-
-    public static final String REGISTRY_CREDENTIAL_SERVICE_BASE_URL= "registry_credential_service_base_url";
+    
     private static Logger logger= LoggerFactory.getLogger(RegistryCredential.class);
-    private  static final String SERVICE_BASE_URL = getPropsFromEnvs(REGISTRY_CREDENTIAL_SERVICE_BASE_URL);
-    private  static final String CERTIFICATE_TYPE = getPropsFromEnvs("certificate_type");
+    private  static final String SERVICE_BASE_URL = getPropsFromEnvs(JsonKeys.REGISTRY_CREDENTIAL_SERVICE_BASE_URL);
+    private  static final String CERTIFICATE_TYPE = getPropsFromEnvs(JsonKeys.RC_ENTITY);
     private static final String API = "/api/v1/%s";
 
     public static String getSERVICE_BASE_URL() {
@@ -35,7 +34,7 @@ public class RegistryCredential {
 
     public static String getRCSearchUri(){
         String apiUrl = String.format(API, CERTIFICATE_TYPE);
-        String rcSearchApi = "https://dev.sunbirded.org/api/rc/certificate/v1/search";//String.format("http://%s/%s/search", getSERVICE_BASE_URL().split(",")[0], apiUrl);
+        String rcSearchApi = String.format("http://%s/%s/search", getSERVICE_BASE_URL().split(",")[0], apiUrl);
         logger.info("RegistryCredential:getRCSearchUri:es uri formed: "+rcSearchApi);
         return rcSearchApi;
     }
