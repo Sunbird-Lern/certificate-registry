@@ -13,7 +13,7 @@ public class RegistryCredential {
     private static Logger logger= LoggerFactory.getLogger(RegistryCredential.class);
     private  static final String SERVICE_BASE_URL = getPropsFromEnvs(JsonKeys.REGISTRY_CREDENTIAL_SERVICE_BASE_URL);
     private  static final String CERTIFICATE_TYPE = getPropsFromEnvs(JsonKeys.RC_ENTITY);
-    private static final String API = "/api/v1/%s";
+    private static final String API = "api/v1/%s";
 
     public static String getSERVICE_BASE_URL() {
         if(StringUtils.isBlank(SERVICE_BASE_URL)){
