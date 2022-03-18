@@ -83,6 +83,7 @@ public class JsonKeys {
     public static final String REGISTRY_CREDENTIAL_SERVICE_BASE_URL= "registry_credential_service_base_url";
     public static final String RC_ENTITY = "rc_entity";
     public static final String APPLICATION_JSON = "application/json";
-    public static final String QUERY_MATCH_PHRASE = "/query/match_phrase";
+    public static final String QUERY_MUST_PHRASE = "/query/bool/must";
+    public static final String MATCH_PHRASE = "/match_phrase";
   public static final String FILTERS = "filters";
 }
