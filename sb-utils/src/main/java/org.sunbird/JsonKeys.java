@@ -79,7 +79,6 @@ public class JsonKeys {
     public static final String ACCEPT = "Accept";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String IMAGE_SVG_XML = "image/svg+xml";
-    public static final String APPLICATION_VC_LD_JSON = "application/vc+ld+json";
     public static final String TEMPLATE_URL = "templateUrl";
     public static final String REGISTRY_CREDENTIAL_SERVICE_BASE_URL= "registry_credential_service_base_url";
     public static final String RC_ENTITY = "rc_entity";
