@@ -247,17 +247,16 @@ public class CertsServiceImpl implements ICertService {
             }
         } else {
             Map<String, String> headerMap = new HashMap<>();
-            headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_VC_LD_JSON);
-            String rcTemplateApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
-            Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcTemplateApi,headerMap);
+            headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
+            String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
+            Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
                 if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
-                    String templateUrl = rcJsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.TEMPLATE_URL);
-                    String rcDownloadApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI()) + "/" + certId;
+                    String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("templateurl", templateUrl);
-                    Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcDownloadApi, headerMap);
+                    Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
                     printUri = rcDownloadJsonResponse.getBody();
                     response.put(JsonKeys.PRINT_URI, printUri);
