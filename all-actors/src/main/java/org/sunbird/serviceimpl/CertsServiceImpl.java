@@ -242,7 +242,7 @@ public class CertsServiceImpl implements ICertService {
                 }
                 response.put(JsonKeys.PRINT_URI, printUri);
             } catch (Exception e) {
-                logger.error("CertsServiceImpl:downloadV2:exception occurred:" + e);
+                logger.error("CertsServiceImpl:downloadV2:exception occurred: " + e);
                 throw new BaseException(IResponseMessage.INTERNAL_ERROR, getLocalizedMessage(IResponseMessage.INTERNAL_ERROR, null), ResponseCode.SERVER_ERROR.getCode());
             }
         } else {
@@ -261,9 +261,11 @@ public class CertsServiceImpl implements ICertService {
                     printUri = rcDownloadJsonResponse.getBody();
                     response.put(JsonKeys.PRINT_URI, printUri);
                 } else {
+                    logger.error("CertsServiceImpl:downloadV2:resource not found");
                     throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
                 }
             } catch (ExecutionException | InterruptedException e) {
+                logger.error("CertsServiceImpl:downloadV2:exception occurred while calling sunbird-rc registry: " + e);
                 throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
             }
         }
@@ -429,7 +431,7 @@ public class CertsServiceImpl implements ICertService {
                     mappedResponse.setContent(rcSearchApiResp);
                 }
             } else {
-                logger.info("CertsServiceImpl:search:exception occurred ");
+                logger.info("CertsServiceImpl:search:invalid request data");
                 throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,rcJsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
             response.put(JsonKeys.RESPONSE, mappedResponse);
@@ -463,10 +465,11 @@ public class CertsServiceImpl implements ICertService {
                 Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
                 mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
             } else {
+                logger.error("CertsServiceImpl:searchEsPostCall: Invalid request data ");
                 throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
         } catch (Exception e) {
-            logger.error("CertsServiceImpl:search:exception occurred: " + e);
+            logger.error("CertsServiceImpl:searchEsPostCall:exception occurred: " + e);
             throw new BaseException(IResponseMessage.INTERNAL_ERROR, IResponseMessage.INTERNAL_ERROR, ResponseCode.SERVER_ERROR.getCode());
         }
         return mappedResponse;
