@@ -34,7 +34,7 @@ public class RegistryCredential {
 
     public static String getRCSearchUri(){
         String apiUrl = String.format(API, CERTIFICATE_TYPE);
-        String rcSearchApi = String.format("http://%s/%s/search", getSERVICE_BASE_URL().split(",")[0], apiUrl);
+        String rcSearchApi = String.format("%s/%s/search", getSERVICE_BASE_URL().split(",")[0], apiUrl);
         logger.info("RegistryCredential:getRCSearchUri:es uri formed: "+rcSearchApi);
         return rcSearchApi;
     }
