@@ -3,6 +3,7 @@ package org.sunbird.serviceimpl;
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -406,7 +407,7 @@ public class CertsServiceImpl implements ICertService {
             logger.info("RegistryCredential:rcSearchApiCall:complete url found: " + rcSearchApiCall);
             Map<String, Object> req = request.getRequest();
             ObjectNode jsonNode = mapper.convertValue(req, ObjectNode.class);
-            ObjectNode jsonNode1 = (ObjectNode) jsonNode.at(JsonKeys.QUERY_MATCH_PHRASE);
+            ObjectNode jsonNode1 = (ObjectNode) jsonNode.at(JsonKeys.QUERY_MUST_PHRASE).get(0).at(JsonKeys.MATCH_PHRASE);
             Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = jsonNode1.fields();
             Map<String, Object> filters = new HashMap<>();
             Map<String, Object> fieldKeyMap = new HashMap<>();
