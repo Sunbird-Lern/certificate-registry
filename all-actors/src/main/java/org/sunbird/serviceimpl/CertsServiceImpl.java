@@ -203,9 +203,9 @@ public class CertsServiceImpl implements ICertService {
             HttpResponse<JsonNode> jsonResponse = responseFuture.get();
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
                 if(jsonResponse.getBody().isArray()) {
-                  logger.info("CertsServiceImpl:download:json response occurred:" + jsonResponse.getBody().getArray());
+                  logger.info("CertsServiceImpl:download:json response : " + jsonResponse.getBody().getArray());
                 } else {
-                  logger.info("CertsServiceImpl:download:exception occurred:" + jsonResponse.getBody().getObject());
+                  logger.info("CertsServiceImpl:download:json response : " + jsonResponse.getBody().getObject());
                 }
                 String signedUrl=jsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.SIGNED_URL);
                 response.put(JsonKeys.SIGNED_URL,signedUrl);
