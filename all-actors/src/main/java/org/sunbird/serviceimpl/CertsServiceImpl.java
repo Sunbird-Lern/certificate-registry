@@ -202,6 +202,11 @@ public class CertsServiceImpl implements ICertService {
             Future<HttpResponse<JsonNode>>responseFuture=CertificateUtil.makeAsyncPostCall(apiToCall,requestBody,headerMap);
             HttpResponse<JsonNode> jsonResponse = responseFuture.get();
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
+                if(jsonResponse.getBody().isArray()) {
+                  logger.info("CertsServiceImpl:download:json response : " + jsonResponse.getBody().getArray().toString());
+                } else {
+                  logger.info("CertsServiceImpl:download:json response : " + jsonResponse.getBody().getObject().toString());
+                }
                 String signedUrl=jsonResponse.getBody().getObject().getJSONObject(JsonKeys.RESULT).getString(JsonKeys.SIGNED_URL);
                 response.put(JsonKeys.SIGNED_URL,signedUrl);
             } else {
@@ -402,7 +407,7 @@ public class CertsServiceImpl implements ICertService {
         try {
             ESResponseMapper mappedResponse = null;
             mappedResponse = searchEsPostCall(request);
-            String rcSearchApiCall = RegistryCredential.getRCSearchUri();
+            String rcSearchApiCall = "https://dev.sunbirded.org/api/certreg/v1/certs/search"; //RegistryCredential.getRCSearchUri();
             logger.info("RegistryCredential:rcSearchApiCall:complete url found: " + rcSearchApiCall);
             Map<String, Object> req = request.getRequest();
             ObjectNode jsonNode = mapper.convertValue(req, ObjectNode.class);
@@ -417,6 +422,7 @@ public class CertsServiceImpl implements ICertService {
             });
             filters.put(JsonKeys.FILTERS, fieldKeyMap);
             String filterString = mapper.writeValueAsString(filters);
+          headerMap.put("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlNmI4Nzg2MmVmNjg0MWU0OWE5YzM5MGEzOTZmNTk0NyJ9.WkIHjIn77-OkC48a3KresX5Bh21RtlwHobTWUDVPEsQ");
             Future<HttpResponse<JsonNode>> rcResponseFuture = CertificateUtil.makeAsyncPostCall(rcSearchApiCall, filterString, headerMap);
             HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
             if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
@@ -466,7 +472,7 @@ public class CertsServiceImpl implements ICertService {
                 mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
             } else {
                 logger.error("CertsServiceImpl:searchEsPostCall: Invalid request data ");
-                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
+                //throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());
             }
         } catch (Exception e) {
             logger.error("CertsServiceImpl:searchEsPostCall:exception occurred: " + e);
