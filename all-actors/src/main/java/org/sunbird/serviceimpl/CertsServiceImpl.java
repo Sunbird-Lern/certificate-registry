@@ -255,7 +255,7 @@ public class CertsServiceImpl implements ICertService {
                 if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
                     String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
-                    headerMap.put("templateurl", templateUrl);
+                    headerMap.put("template", templateUrl);
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
                     printUri = rcDownloadJsonResponse.getBody();
