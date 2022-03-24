@@ -257,11 +257,16 @@ public class CertsServiceImpl implements ICertService {
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("template", templateUrl);
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
-                    HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
-                    printUri = rcDownloadJsonResponse.getBody();
-                    response.put(JsonKeys.PRINT_URI, printUri);
+                    if (rcDownloadResFuture != null && rcDownloadResFuture.get().getStatus() == HttpStatus.SC_OK) {
+                        HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
+                        String responseBody = rcDownloadJsonResponse.getBody();
+                        response.put(JsonKeys.PRINT_URI, responseBody);
+                    } else {
+                        logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
+                        throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+                    }
                 } else {
-                    logger.error("CertsServiceImpl:downloadV2:resource not found");
+                    logger.error("CertsServiceImpl:downloadV2:resource template json not found for certificate-id : " +certId);
                     throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
                 }
             } catch (ExecutionException | InterruptedException e) {
