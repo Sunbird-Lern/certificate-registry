@@ -248,8 +248,7 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
-            headerMap.put("authorization","Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSbTBGOTlnMnd4SmZKelJwa2YzTnRlaE5CYlJnZXRCaCJ9.CjDN6GufxylpAM5J_6j9fD0wq7S2qr1F6FOzAZtQ6XU");
-            String rcApi = "https://staging.sunbirded.org/api/rc/certificate/v1/download/1-68a71795-a0fd-4b32-a492-81e0ce4da041";//RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
+            String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
