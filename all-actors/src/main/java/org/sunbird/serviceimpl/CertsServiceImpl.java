@@ -248,7 +248,8 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
-            String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
+            headerMap.put("authorization","Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSbTBGOTlnMnd4SmZKelJwa2YzTnRlaE5CYlJnZXRCaCJ9.CjDN6GufxylpAM5J_6j9fD0wq7S2qr1F6FOzAZtQ6XU");
+            String rcApi = "https://staging.sunbirded.org/api/rc/certificate/v1/download/1-68a71795-a0fd-4b32-a492-81e0ce4da041";//RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
@@ -257,16 +258,16 @@ public class CertsServiceImpl implements ICertService {
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("template", templateUrl);
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
-                    HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
-                    String responseBody = rcDownloadJsonResponse.getBody();
-                    if(responseBody != null || !responseBody.isEmpty()) {
+                    if (rcDownloadResFuture != null && rcDownloadResFuture.get().getStatus() == HttpStatus.SC_OK) {
+                        HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
+                        String responseBody = rcDownloadJsonResponse.getBody();
                         response.put(JsonKeys.PRINT_URI, responseBody);
                     } else {
-                        logger.error("CertsServiceImpl:downloadV2:response body is empty for the certificate-id : "+certId);
+                        logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
                         throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
                     }
                 } else {
-                    logger.error("CertsServiceImpl:downloadV2:resource not found");
+                    logger.error("CertsServiceImpl:downloadV2:resource template json not found for certificate-id : " +certId);
                     throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
                 }
             } catch (ExecutionException | InterruptedException e) {
