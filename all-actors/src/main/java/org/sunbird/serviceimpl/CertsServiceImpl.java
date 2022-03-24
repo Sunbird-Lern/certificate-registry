@@ -258,8 +258,13 @@ public class CertsServiceImpl implements ICertService {
                     headerMap.put("template", templateUrl);
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
-                    printUri = rcDownloadJsonResponse.getBody();
-                    response.put(JsonKeys.PRINT_URI, printUri);
+                    String responseBody = rcDownloadJsonResponse.getBody();
+                    if(responseBody != null || !responseBody.isEmpty()) {
+                        response.put(JsonKeys.PRINT_URI, responseBody);
+                    } else {
+                        logger.error("CertsServiceImpl:downloadV2:response body is empty for the certificate-id : "+certId);
+                        throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+                    }
                 } else {
                     logger.error("CertsServiceImpl:downloadV2:resource not found");
                     throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
