@@ -85,5 +85,9 @@ public class JsonKeys {
     public static final String APPLICATION_JSON = "application/json";
     public static final String QUERY_MUST_PHRASE = "/query/bool/must";
     public static final String MATCH_PHRASE = "/match_phrase";
-  public static final String FILTERS = "filters";
+    public static final String FILTERS = "filters";
+    public static final String COURSE_ID = "courseId";
+    public static final String CERTIFICATE_LABEL = "certificateLabel";
+    public static final String OSID = "osid";
+    public static final String TRAINING = "training";
 }
