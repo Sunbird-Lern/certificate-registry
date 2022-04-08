@@ -130,7 +130,7 @@ public class CertificateUtil {
         }
     
     public static Future<HttpResponse<String>> makeAsyncGetCallString(String apiToCall, Map<String,String>headerMap){
-        logger.info("CertificateUtil:makePostCall:get request to make post call for API:"+apiToCall);
+        logger.info("CertificateUtil:makeAsyncGetCallString:get request to make get call for API:"+apiToCall);
         Future<HttpResponse<String>> jsonResponse
           = Unirest.get(apiToCall)
           .headers(headerMap)
@@ -139,7 +139,7 @@ public class CertificateUtil {
     }
     
     public static Future<HttpResponse<JsonNode>> makeAsyncGetCall(String apiToCall, Map<String,String>headerMap){
-        logger.info("CertificateUtil:makePostCall:get request to make post call for API:"+apiToCall);
+        logger.info("CertificateUtil:makeAsyncGetCall:get request to make get call for API:"+apiToCall);
         Future<HttpResponse<JsonNode>> jsonResponse
           = Unirest.get(apiToCall)
           .headers(headerMap)

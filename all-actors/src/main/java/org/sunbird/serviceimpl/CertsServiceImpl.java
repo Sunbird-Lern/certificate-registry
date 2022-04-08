@@ -248,17 +248,21 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
+            
             String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
                 if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
                     String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
+                    logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("template", templateUrl);
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     if (rcDownloadResFuture != null && rcDownloadResFuture.get().getStatus() == HttpStatus.SC_OK) {
+                        logger.info("CertsServiceImpl:downloadV2: success: ");
                         HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
+                        logger.info("CertsServiceImpl:downloadV2: success: rcDownloadJsonResponse :"+rcDownloadJsonResponse.getBody());
                         String responseBody = rcDownloadJsonResponse.getBody();
                         response.put(JsonKeys.PRINT_URI, responseBody);
                     } else {
