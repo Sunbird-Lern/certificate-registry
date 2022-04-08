@@ -248,7 +248,6 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
-            
             String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
@@ -257,24 +256,13 @@ public class CertsServiceImpl implements ICertService {
                     String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
                     logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
-                    headerMap.put("template", templateUrl);
-                    String responseBody = null;
-                    Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
-                    if (rcDownloadResFuture != null && rcDownloadResFuture.get().getStatus() == HttpStatus.SC_OK) {
+                    HttpResponse<String> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
+                    if (rcDownloadResFuture != null && rcDownloadResFuture.getStatus() == HttpStatus.SC_OK) {
                         logger.info("CertsServiceImpl:downloadV2: success: ");
-                        HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
-                        logger.info("CertsServiceImpl:downloadV2: success: rcDownloadJsonResponse :"+rcDownloadJsonResponse.getBody());
-                        if(rcDownloadJsonResponse.getBody() == null || rcDownloadJsonResponse.getBody().isEmpty()) {
-                            Future<HttpResponse<JsonNode>> rcDownloadResFuture1 = CertificateUtil.makeAsyncGetCall(rcApi, headerMap);
-                            HttpResponse<JsonNode> rcDownloadJsonResponse1 = rcDownloadResFuture1.get();
-                            if(rcDownloadJsonResponse1 != null && rcDownloadJsonResponse1.getStatus() == HttpStatus.SC_OK) {
-                                logger.info("CertsServiceImpl:downloadV2: success: rcDownloadJsonResponse1 :"+rcDownloadJsonResponse1.getBody());
-                                responseBody = rcDownloadJsonResponse1.getBody().toString();
-                            }
-                        } else {
-                            responseBody = rcDownloadJsonResponse.getBody();
+                        String responseBody = rcDownloadResFuture.getBody();
+                        if(responseBody != null) {
+                            response.put(JsonKeys.PRINT_URI, responseBody);
                         }
-                        response.put(JsonKeys.PRINT_URI, responseBody);
                     } else {
                         logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
                         throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());

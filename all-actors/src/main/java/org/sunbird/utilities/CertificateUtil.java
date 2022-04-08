@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
@@ -129,12 +130,12 @@ public class CertificateUtil {
             return jsonResponse;
         }
     
-    public static Future<HttpResponse<String>> makeAsyncGetCallString(String apiToCall, Map<String,String>headerMap){
+    public static HttpResponse<String> makeAsyncGetCallString(String apiToCall, Map<String,String>headerMap) throws ExecutionException, InterruptedException {
         logger.info("CertificateUtil:makeAsyncGetCallString:get request to make get call for API:"+apiToCall);
-        Future<HttpResponse<String>> jsonResponse
-          = Unirest.get(apiToCall)
+        HttpResponse<String> jsonResponse
+          =  Unirest.get(apiToCall)
           .headers(headerMap)
-          .asStringAsync();
+          .asStringAsync().get();
         return jsonResponse;
     }
     
