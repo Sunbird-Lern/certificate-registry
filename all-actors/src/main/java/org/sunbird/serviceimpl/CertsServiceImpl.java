@@ -258,12 +258,22 @@ public class CertsServiceImpl implements ICertService {
                     logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
                     headerMap.put("template", templateUrl);
+                    String responseBody = null;
                     Future<HttpResponse<String>> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     if (rcDownloadResFuture != null && rcDownloadResFuture.get().getStatus() == HttpStatus.SC_OK) {
                         logger.info("CertsServiceImpl:downloadV2: success: ");
                         HttpResponse<String> rcDownloadJsonResponse = rcDownloadResFuture.get();
                         logger.info("CertsServiceImpl:downloadV2: success: rcDownloadJsonResponse :"+rcDownloadJsonResponse.getBody());
-                        String responseBody = rcDownloadJsonResponse.getBody();
+                        if(rcDownloadJsonResponse.getBody() == null || rcDownloadJsonResponse.getBody().isEmpty()) {
+                            Future<HttpResponse<JsonNode>> rcDownloadResFuture1 = CertificateUtil.makeAsyncGetCall(rcApi, headerMap);
+                            HttpResponse<JsonNode> rcDownloadJsonResponse1 = rcDownloadResFuture1.get();
+                            if(rcDownloadJsonResponse1 != null && rcDownloadJsonResponse1.getStatus() == HttpStatus.SC_OK) {
+                                logger.info("CertsServiceImpl:downloadV2: success: rcDownloadJsonResponse1 :"+rcDownloadJsonResponse1.getBody());
+                                responseBody = rcDownloadJsonResponse1.getBody().toString();
+                            }
+                        } else {
+                            responseBody = rcDownloadJsonResponse.getBody();
+                        }
                         response.put(JsonKeys.PRINT_URI, responseBody);
                     } else {
                         logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
