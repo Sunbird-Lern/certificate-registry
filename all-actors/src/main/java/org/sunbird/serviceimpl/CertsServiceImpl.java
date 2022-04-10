@@ -256,6 +256,7 @@ public class CertsServiceImpl implements ICertService {
                     String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
                     logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
+                    headerMap.put("template", templateUrl);
                     HttpResponse<String> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     if (rcDownloadResFuture != null && rcDownloadResFuture.getStatus() == HttpStatus.SC_OK) {
                         logger.info("CertsServiceImpl:downloadV2: success: ");
@@ -474,6 +475,7 @@ public class CertsServiceImpl implements ICertService {
             oldCertMap.put("_type", "_doc");
             oldCertMap.put("_id", rcMap.get(JsonKeys.OSID));
             oldCertMap.put("_score", "");
+            oldCertMap.put("_source", sourceMap);
             oldCertMapList.add(oldCertMap);
         });
         return oldCertMapList;
