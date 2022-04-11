@@ -256,6 +256,7 @@ public class CertsServiceImpl implements ICertService {
                     String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
                     logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
                     headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
+                    headerMap.put("template", templateUrl);
                     HttpResponse<String> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
                     if (rcDownloadResFuture != null && rcDownloadResFuture.getStatus() == HttpStatus.SC_OK) {
                         logger.info("CertsServiceImpl:downloadV2: success: ");
@@ -431,11 +432,13 @@ public class CertsServiceImpl implements ICertService {
                 List<Map<String, Object>> rcSearchApiResp = requestMapper.readValue(rcJsonArray, List.class);
                 if(mappedResponse != null) {
                     mappedResponse.setCount(mappedResponse.getCount() + rcSearchApiResp.size());
-                    mappedResponse.getContent().addAll(rcSearchApiResp);
+                    List<Map<String, Object>> oldCertMapLst = convertResponseToOldCertFormat(rcSearchApiResp);
+                    mappedResponse.getContent().addAll(oldCertMapLst);
                 } else {
                     mappedResponse = new ESResponseMapper();
                     mappedResponse.setCount(rcSearchApiResp.size());
-                    mappedResponse.setContent(rcSearchApiResp);
+                    List<Map<String, Object>> oldCertMapLst = convertResponseToOldCertFormat(rcSearchApiResp);
+                    mappedResponse.setContent(oldCertMapLst);
                 }
             } else {
                 logger.info("CertsServiceImpl:search:invalid request data");
@@ -448,6 +451,34 @@ public class CertsServiceImpl implements ICertService {
             throw new BaseException(IResponseMessage.INTERNAL_ERROR, IResponseMessage.INTERNAL_ERROR, ResponseCode.SERVER_ERROR.getCode());
         }
         return response;
+    }
+    
+    private List<Map<String, Object>> convertResponseToOldCertFormat(List<Map<String, Object>> rcSearchApiResp) {
+        List<Map<String, Object>> oldCertMapList = new ArrayList<>();
+        rcSearchApiResp.forEach(rcMap -> {
+            Map<String, Object> oldCertMap = new HashMap<>();
+            Map<String, Object> sourceMap = new HashMap<>();
+            Map<String, Object> dataMap = new HashMap<>();
+            Map<String, Object> couserMap = new HashMap<>();
+            Map<String, Object> badgeMap = new HashMap<>();
+            Map<String, Object> issuerMap = new HashMap<>();
+            issuerMap.put(JsonKeys.NAME, ((Map<String, Object>)rcMap.get(JsonKeys.ISSUER)).get(JsonKeys.NAME));
+            badgeMap.put(JsonKeys.NAME, rcMap.get(JsonKeys.CERTIFICATE_LABEL));
+            badgeMap.put(JsonKeys.ISSUER, issuerMap);
+            couserMap.put(JsonKeys.COURSE_ID, ((Map<String, Object>)rcMap.get(JsonKeys.TRAINING)).get(JsonKeys.ID));
+            dataMap.put(JsonKeys.BADGE, badgeMap);
+            dataMap.put(JsonKeys.ISSUED_ON, ((Map<String, Object>)rcMap.get(JsonKeys.TRAINING)).get("osCreatedAt"));
+            sourceMap.put(JsonKeys.PDF_URL, null);
+            sourceMap.put(JsonKeys.DATA, dataMap);
+            sourceMap.put(JsonKeys.RELATED, couserMap);
+            oldCertMap.put("_index", "certv3");
+            oldCertMap.put("_type", "_doc");
+            oldCertMap.put("_id", rcMap.get(JsonKeys.OSID));
+            oldCertMap.put("_score", "");
+            oldCertMap.put("_source", sourceMap);
+            oldCertMapList.add(oldCertMap);
+        });
+        return oldCertMapList;
     }
     
     @Override
