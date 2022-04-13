@@ -248,8 +248,12 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
-            headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
-            headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
+            if(request.getHeaders() != null && request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN) != null) {
+                headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
+            }
+            if(request.getHeaders() != null && request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR) != null) {
+                headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
+            }
 
             String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
@@ -410,8 +414,12 @@ public class CertsServiceImpl implements ICertService {
         Map<String, String> headerMap = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         headerMap.put(JsonKeys.CONTENT_TYPE, JsonKeys.APPLICATION_JSON);
-        headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
-        headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
+        if(request.getHeaders() != null && request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN) != null) {
+            headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
+        }
+        if(request.getHeaders() != null && request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR) != null) {
+            headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
+        }
         try {
             ESResponseMapper mappedResponse = null;
             mappedResponse = searchEsPostCall(request);
@@ -468,7 +476,7 @@ public class CertsServiceImpl implements ICertService {
             Map<String, Object> badgeMap = new HashMap<>();
             Map<String, Object> issuerMap = new HashMap<>();
             issuerMap.put(JsonKeys.NAME, ((Map<String, Object>)rcMap.get(JsonKeys.ISSUER)).get(JsonKeys.NAME));
-            badgeMap.put(JsonKeys.NAME, rcMap.get(JsonKeys.CERTIFICATE_LABEL));
+            badgeMap.put(JsonKeys.NAME, ((Map<String, Object>)rcMap.get(JsonKeys.TRAINING)).get(JsonKeys.NAME));
             badgeMap.put(JsonKeys.ISSUER, issuerMap);
             couserMap.put(JsonKeys.COURSE_ID, ((Map<String, Object>)rcMap.get(JsonKeys.TRAINING)).get(JsonKeys.ID));
             dataMap.put(JsonKeys.BADGE, badgeMap);
