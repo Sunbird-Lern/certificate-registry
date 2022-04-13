@@ -302,6 +302,8 @@ public class CertificationActorTest {
         Map<String,Object> reqMap = new HashMap<>();
         reqMap.put(JsonKeys.ID,"anyMockId");
         reqObj.getRequest().putAll(reqMap);
+        reqObj.getHeaders().put(JsonKeys.X_AUTHENTICATED_FOR, "X_AUTHENTICATED_FOR");
+        reqObj.getHeaders().put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, "X_AUTHENTICATED_USER_TOKEN");
         return reqObj;
     }
 
