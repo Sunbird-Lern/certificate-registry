@@ -248,6 +248,9 @@ public class CertsServiceImpl implements ICertService {
         } else {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put(JsonKeys.ACCEPT, JsonKeys.APPLICATION_JSON);
+            headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
+            headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
+
             String rcApi = RegistryCredential.getSERVICE_BASE_URL().concat(RegistryCredential.getDOWNLOAD_URI())+"/"+certId;
             Future<HttpResponse<JsonNode>> rcResponseFuture=CertificateUtil.makeAsyncGetCall(rcApi,headerMap);
             try {
@@ -407,6 +410,8 @@ public class CertsServiceImpl implements ICertService {
         Map<String, String> headerMap = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         headerMap.put(JsonKeys.CONTENT_TYPE, JsonKeys.APPLICATION_JSON);
+        headerMap.put(JsonKeys.X_AUTHENTICATED_USER_TOKEN, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_USER_TOKEN).toString());
+        headerMap.put(JsonKeys.X_AUTHENTICATED_FOR, request.getHeaders().get(JsonKeys.X_AUTHENTICATED_FOR).toString());
         try {
             ESResponseMapper mappedResponse = null;
             mappedResponse = searchEsPostCall(request);

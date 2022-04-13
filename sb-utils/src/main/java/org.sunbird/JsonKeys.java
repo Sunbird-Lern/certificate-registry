@@ -90,4 +90,8 @@ public class JsonKeys {
     public static final String CERTIFICATE_LABEL = "certificateLabel";
     public static final String OSID = "osid";
     public static final String TRAINING = "training";
+    public static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
+    public static final String X_AUTHENTICATED_FOR = "x-authenticated-for";
+
+
 }
