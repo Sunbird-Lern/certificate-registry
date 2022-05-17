@@ -1,5 +1,9 @@
 package controllers;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
@@ -8,6 +12,7 @@ import akka.actor.ActorRef;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sunbird.BaseException;
@@ -20,6 +25,7 @@ import org.sunbird.response.Response;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import utils.RequestMapper;
@@ -101,6 +107,10 @@ public class BaseController extends Controller {
             if (req.body() != null && req.body().asJson() != null) {
                 request = (Request) RequestMapper.mapRequest(req, Request.class);
             }
+            if (req.getHeaders() != null && request.getHeaders() != null) {
+                Map<String, Object> map = getAllRequestHeaders(req);
+                request.setHeaders(map);
+            }
             if (validatorFunction != null) {
                 validatorFunction.apply(request);
             }
@@ -119,5 +129,16 @@ public class BaseController extends Controller {
                             + ", So play server will not allow any new request.");
             throw new BaseException(IResponseMessage.SERVICE_UNAVAILABLE, IResponseMessage.SERVICE_UNAVAILABLE, ResponseCode.SERVICE_UNAVAILABLE.getCode());
         }
+    }
+    
+    public Map<String, Object> getAllRequestHeaders(Http.Request request) {
+        Map<String, Object> map = new HashMap<>();
+        Map<String, List<String>> headers = request.getHeaders().toMap();
+        Iterator<Map.Entry<String, List<String>>> itr = headers.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<String, List<String>> entry = itr.next();
+            map.put(entry.getKey(), entry.getValue().get(0));
+        }
+        return map;
     }
 }
