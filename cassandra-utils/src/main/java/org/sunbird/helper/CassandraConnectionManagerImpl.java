@@ -12,6 +12,7 @@ import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.QueryOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import java.util.Collection;
 import java.util.HashMap;
@@ -102,9 +103,9 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
         poolingOptions.setPoolTimeoutMillis(
             Integer.parseInt(cache.getProperty(Constants.POOL_TIMEOUT)));
         if (!StringUtils.isBlank(userName) && !StringUtils.isBlank(password)) {
-          cluster = createCluster(ips, port, userName, password, poolingOptions);
+          cluster = createCluster(ips, port, userName, password, poolingOptions, Boolean.parseBoolean(cache.getProperty(Constants.IS_MULTI_DC_ENABLED)));
         } else {
-          cluster = createCluster(ips, port, poolingOptions);
+          cluster = createCluster(ips, port, poolingOptions, Boolean.parseBoolean(cache.getProperty(Constants.IS_MULTI_DC_ENABLED)));
         }
         QueryLogger queryLogger =
             QueryLogger.builder()
@@ -175,7 +176,7 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
    * @return Cassandra cluster
    */
   private static Cluster createCluster(
-      String ips, String port, String userName, String password, PoolingOptions poolingOptions) {
+      String ips, String port, String userName, String password, PoolingOptions poolingOptions, boolean isMultiDCEnabled) {
     String[] hosts =  null;
     if (StringUtils.isNotBlank(ips)) {
       hosts =  ips.split(",");
@@ -203,6 +204,11 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
     }
 
+    logger.info(
+            "CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = " + isMultiDCEnabled);
+    if (isMultiDCEnabled) {
+      builder.withLoadBalancingPolicy(DCAwareRoundRobinPolicy.builder().build());
+    }
     return builder.build();
   }
 
@@ -214,8 +220,8 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
    * @param poolingOptions Pooling options
    * @return Cassandra cluster
    */
-  private static Cluster createCluster(String ip, String port, PoolingOptions poolingOptions) {
-    return createCluster(ip, port, null, null, poolingOptions);
+  private static Cluster createCluster(String ip, String port, PoolingOptions poolingOptions, boolean isMultiDCEnabled) {
+    return createCluster(ip, port, null, null, poolingOptions, isMultiDCEnabled);
   }
 
   @Override
