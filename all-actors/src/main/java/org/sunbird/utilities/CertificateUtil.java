@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.sunbird.ActorOperations;
-import org.sunbird.Application;
 import org.sunbird.BaseException;
 import org.sunbird.JsonKeys;
 import org.sunbird.cassandra.CassandraOperation;
@@ -26,7 +25,10 @@ import org.sunbird.request.RequestParams;
 import org.sunbird.response.Response;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
@@ -60,7 +62,7 @@ public class CertificateUtil {
         return cassandraOperation.getRecordById(JsonKeys.SUNBIRD,JsonKeys.CERT_REGISTRY,id);
     }
 
-    public static Boolean deleteRecord(String id) throws BaseException {
+    public static Boolean deleteRecord(String id, ActorRef certBackgroundActorRef) throws BaseException {
         Boolean bool = (Boolean)ElasticSearchHelper.getResponseFromFuture(elasticSearchService.delete(JsonKeys.CERT_ALIAS,id));
         logger.info("Data deleted from ES for id "+id);
         //Delete the data from cassandra
@@ -70,11 +72,11 @@ public class CertificateUtil {
         RequestParams params = new RequestParams();
         params.setMsgid(MDC.get(JsonKeys.REQUEST_MESSAGE_ID));
         req.setParams(params);
-        Application.getInstance().getActorRef(ActorOperations.DELETE_CERT_CASSANDRA.getOperation()).tell(req, ActorRef.noSender());
+        certBackgroundActorRef.tell(req, ActorRef.noSender());
         return bool;
     }
 
-    public static Response insertRecord(Map<String,Object>certAddReqMap) throws BaseException {
+    public static Response insertRecord(Map<String,Object>certAddReqMap, ActorRef certBackgroundActorRef) throws BaseException {
         Map<String,Object>certMap = new HashMap<>();
         long createdAt = System.currentTimeMillis();
         certAddReqMap.put(JsonKeys.CREATED_AT,createdAt);
@@ -106,7 +108,7 @@ public class CertificateUtil {
         req.setParams(params);
         req.setOperation(ActorOperations.ADD_CERT_ES.getOperation());
         req.getRequest().put(JsonKeys.REQUEST,certAddReqMap);
-        Application.getInstance().getActorRef(ActorOperations.ADD_CERT_ES.getOperation()).tell(req, ActorRef.noSender());
+        certBackgroundActorRef.tell(req, ActorRef.noSender());
         return response;
 
     }
@@ -127,7 +129,24 @@ public class CertificateUtil {
                     .asJsonAsync();
             return jsonResponse;
         }
-
+    
+    public static HttpResponse<String> makeAsyncGetCallString(String apiToCall, Map<String,String>headerMap) throws ExecutionException, InterruptedException {
+        logger.info("CertificateUtil:makeAsyncGetCallString:get request to make get call for API:"+apiToCall);
+        HttpResponse<String> jsonResponse
+          =  Unirest.get(apiToCall)
+          .headers(headerMap)
+          .asStringAsync().get();
+        return jsonResponse;
+    }
+    
+    public static Future<HttpResponse<JsonNode>> makeAsyncGetCall(String apiToCall, Map<String,String>headerMap){
+        logger.info("CertificateUtil:makeAsyncGetCall:get request to make get call for API:"+apiToCall);
+        Future<HttpResponse<JsonNode>> jsonResponse
+          = Unirest.get(apiToCall)
+          .headers(headerMap)
+          .asJsonAsync();
+        return jsonResponse;
+    }
     private static String getLocalizedMessage(String key, Locale locale){
         return localizer.getMessage(key, locale);
     }

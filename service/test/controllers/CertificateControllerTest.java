@@ -8,19 +8,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.sunbird.JsonKeys;
-import org.sunbird.message.ResponseCode;
-import org.sunbird.request.HeaderParam;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.JsonKey;
+import utils.module.ACTOR_NAMES;
 import utils.module.OnRequestHandler;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 public class CertificateControllerTest extends BaseApplicationTest {
     @Before
     public void before() {
-        setup(DummyActor.class);
+        setup(Arrays.asList(ACTOR_NAMES.CERTIFICATION_ACTOR),DummyActor.class);
     }
 
     @Test

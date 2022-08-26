@@ -1,17 +1,9 @@
 package controllers.health;
 
 import controllers.BaseController;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import org.sunbird.BaseException;
-import org.sunbird.message.IResponseMessage;
-import org.sunbird.message.ResponseCode;
+import play.mvc.Http;
 import play.mvc.Result;
-import play.mvc.Results;
-import utils.module.SignalHandler;
-
-import javax.inject.Inject;
 
 /**
  * This controller class will responsible to check health of the services.
@@ -25,8 +17,8 @@ public class HealthController extends BaseController {
    *
    * @return a CompletableFuture of success response
    */
-  public CompletionStage<Result> getHealth() {
-    CompletionStage<Result> response = handleRequest(request());
+  public CompletionStage<Result> getHealth(Http.Request httpRequest) {
+    CompletionStage<Result> response = handleRequest(httpRequest);
     return response;
   }
   /**
@@ -34,8 +26,8 @@ public class HealthController extends BaseController {
    *
    * @return a CompletableFuture of success response
    */
-  public CompletionStage<Result> getServiceHealth(String service) {
-    CompletionStage<Result> response = handleRequest(request());
+  public CompletionStage<Result> getServiceHealth(String service, Http.Request httpRequest) {
+    CompletionStage<Result> response = handleRequest(httpRequest);
     return response;
   }
 

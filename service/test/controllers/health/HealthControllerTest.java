@@ -1,56 +1,38 @@
 package controllers.health;
 
-import controllers.BaseControllerTest;
-import controllers.TestHelper;
-import org.junit.After;
+import controllers.BaseApplicationTest;
+import controllers.DummyActor;
 import org.junit.Before;
 import org.junit.Test;
-import org.sunbird.BaseException;
-import play.Application;
 import play.mvc.Result;
-import play.test.Helpers;
+import utils.module.ACTOR_NAMES;
 
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-public class HealthControllerTest extends BaseControllerTest {
-    TestHelper testHelper;
-    public static Application app;
-    public static Map<String, String[]> headerMap;
-
-    public HealthControllerTest() throws BaseException {
-        super();
-    }
+public class HealthControllerTest extends BaseApplicationTest {
 
     @Before
-    public void setUp(){
-        testHelper = new TestHelper();
-        app = Helpers.fakeApplication();
-        Helpers.start(app);
-        headerMap = testHelper.getHeaderMap();
+    public void before() {
+        setup(Arrays.asList(ACTOR_NAMES.CERTIFICATION_ACTOR), DummyActor.class);
     }
 
-    @After
-    public void tearDown(){
-        headerMap = null;
-        app = null;
-        testHelper = null;
-    }
     @Test
     public void testGetHealthSuccess() {
         Map<String, Object> reqMap = new HashMap<>();
         reqMap.put("accept", "yes");
-        Result result = testHelper.performTest("/health", "GET", reqMap, headerMap);
-        assertTrue(testHelper.getResponseStatus(result) == Response.Status.OK.getStatusCode());
+        Result result = performTest("/health", "GET", reqMap);
+        assertTrue(getResponseStatus(result) == Response.Status.OK.getStatusCode());
     }
     @Test
     public void testGetHealthFailure() {
         Map<String, Object> reqMap = new HashMap<>();
         reqMap.put("accept", "yes");
-        Result result = testHelper.performTest("/health", "POST", reqMap, headerMap);
-        assertTrue(testHelper.getResponseStatus(result) == Response.Status.NOT_FOUND.getStatusCode());
+        Result result = performTest("/health", "POST", reqMap);
+        assertTrue(getResponseStatus(result) == Response.Status.NOT_FOUND.getStatusCode());
     }
 }

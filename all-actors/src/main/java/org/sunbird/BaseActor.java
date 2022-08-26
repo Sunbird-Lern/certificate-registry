@@ -9,10 +9,7 @@ import org.sunbird.message.ResponseCode;
 import org.sunbird.request.Request;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Amit Kumar
@@ -29,9 +26,13 @@ public abstract class BaseActor extends UntypedAbstractActor {
             Request request = (Request) message;
             Map<String, Object> trace = new HashMap<>();
             if (request.getHeaders().containsKey(JsonKeys.REQUEST_MESSAGE_ID)) {
-                ArrayList<String> requestIds =
-                        (ArrayList<String>) request.getHeaders().get(JsonKeys.REQUEST_MESSAGE_ID);
-                trace.put(JsonKeys.REQUEST_MESSAGE_ID, requestIds.get(0));
+                if(request.getHeaders().get(JsonKeys.REQUEST_MESSAGE_ID) instanceof String) {
+                    trace.put(JsonKeys.REQUEST_MESSAGE_ID, request.getHeaders().get(JsonKeys.REQUEST_MESSAGE_ID));
+                } else {
+                    ArrayList<String> requestIds =
+                      (ArrayList<String>) request.getHeaders().get(JsonKeys.REQUEST_MESSAGE_ID);
+                    trace.put(JsonKeys.REQUEST_MESSAGE_ID, requestIds.get(0));
+                }
                 logger.setMDC(trace);
                 // set mdc for non actors
                 new BaseLogger().setReqId(logger.getMDC());
@@ -60,7 +61,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
      * @throws Exception
      */
     protected void onReceiveException(String callerName, Exception exception) throws Exception {
-        logger.error("Exception in message processing for: " + callerName + " :: message: " + exception.getMessage(), exception);
+        logger.error("Exception in message processing for: " + callerName + " :: message: " + exception, exception);
         sender().tell(exception, self());
     }
 

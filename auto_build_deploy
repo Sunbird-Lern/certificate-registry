@@ -8,6 +8,7 @@ node('build-slave') {
         String ANSI_YELLOW = "\u001B[33m"
 
         ansiColor('xterm') {
+          withEnv(["JAVA_HOME=${JAVA11_HOME}"]) {
             stage('Checkout') {
                 tag_name = env.JOB_NAME.split("/")[-1]
                 pre_checks()
@@ -52,6 +53,7 @@ node('build-slave') {
         slack_notify(currentBuild.result, tag_name)
         email_notify()  
         auto_build_deploy()
+     }
     }
     catch (err) {
         currentBuild.result = "FAILURE"

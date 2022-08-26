@@ -69,7 +69,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
   Session.class
 
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "jdk.internal.reflect.*"})
 public class CassandraOperationImplTest {
   Localizer localizer = Localizer.getInstance();
   private static Cluster cluster;

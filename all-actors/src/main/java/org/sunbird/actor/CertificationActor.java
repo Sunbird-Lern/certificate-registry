@@ -1,32 +1,33 @@
 package org.sunbird.actor;
 
+import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sunbird.BaseActor;
 import org.sunbird.BaseException;
-import org.sunbird.BaseLogger;
 import org.sunbird.JsonKeys;
-import org.sunbird.actor.core.ActorConfig;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
 import org.sunbird.service.ICertService;
 import org.sunbird.serviceimpl.CertsServiceImpl;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.ExecutionException;
 
-@ActorConfig(
-        tasks = {"add","validate","download","generate","verify","search","read", "addV2", "downloadV2"},
-        dispatcher = "",
-        asyncTasks = {}
-)
 public class CertificationActor extends BaseActor {
     private ICertService certService = getCertServiceImpl();
+
+    @Inject
+    @Named("certificate_background_actor")
+    private ActorRef certBackgroundActorRef;
+
 
     private ICertService getCertServiceImpl(){
         return new CertsServiceImpl();
     }
 
     @Override
-    public void onReceive(Request request) throws BaseException {
+    public void onReceive(Request request) throws BaseException, InterruptedException, ExecutionException, JsonProcessingException {
         logger.info("CertificationActor:onReceive:request arrived with operation" + request.getOperation());
         String operation = request.getOperation();
         switch (operation) {
@@ -57,13 +58,16 @@ public class CertificationActor extends BaseActor {
             case "downloadV2" :
                 downloadV2(request);
                 break;
+            case "searchV2":
+                searchV2(request);
+                break;
             default:
                 onReceiveUnsupportedMessage("CertificationActor");
         }
     }
 
     private void add(Request request) throws BaseException {
-        String id = certService.add(request);
+        String id = certService.add(request, certBackgroundActorRef);
         Response response = new Response();
         response.put(JsonKeys.ID, id);
         sender().tell(response, self());
@@ -92,6 +96,10 @@ public class CertificationActor extends BaseActor {
     }
     private void search(Request request) throws BaseException{
         sender().tell(certService.search(request),self());
+    }
+    
+    private void searchV2(Request request) throws BaseException{
+        sender().tell(certService.searchV2(request),self());
     }
 
     private void downloadV2(Request request) throws BaseException {
