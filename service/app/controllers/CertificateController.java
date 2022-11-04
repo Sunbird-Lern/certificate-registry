@@ -1,10 +1,14 @@
 package controllers;
 
+import akka.actor.ActorRef;
 import org.sunbird.JsonKeys;
 import org.sunbird.request.Request;
+import play.mvc.Http;
 import play.mvc.Result;
 import validators.*;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -15,14 +19,19 @@ import java.util.concurrent.CompletionStage;
  */
 public class CertificateController extends BaseController {
 
+
+    @Inject
+    @Named("certification_actor")
+    private ActorRef certificationActorRef;
+
     /**
      * this action method will be called for adding certificate
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> add()
+    public CompletionStage<Result> add(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertAddRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     Map<String, Object> context = new HashMap<>();
@@ -37,10 +46,10 @@ public class CertificateController extends BaseController {
      * this action method will be called for adding certificate
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> addV2()
+    public CompletionStage<Result> addV2(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertAddRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     Map<String, Object> context = new HashMap<>();
@@ -55,10 +64,10 @@ public class CertificateController extends BaseController {
      * this action method will be called for verifying certificate
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> validate()
+    public CompletionStage<Result> validate(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertValidateRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
             request -> {
                 Request req = (Request) request;
                 requestValidator.validate(req);
@@ -70,10 +79,10 @@ public class CertificateController extends BaseController {
      * this action method will be called for downloading certificate
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> download()
+    public CompletionStage<Result> download(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertDownloadRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     requestValidator.validate(req);
@@ -87,9 +96,9 @@ public class CertificateController extends BaseController {
      *
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> downloadV2(String id) {
+    public CompletionStage<Result> downloadV2(String id, Http.Request httpRequest) {
         IRequestValidator requestValidator = new CertDownloadV2RequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     req.getRequest().put(JsonKeys.ID, id);
@@ -102,10 +111,10 @@ public class CertificateController extends BaseController {
      * this action method will be called for verify certificate
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> verify()
+    public CompletionStage<Result> verify(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertVerifyRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     requestValidator.validate(req);
@@ -117,9 +126,9 @@ public class CertificateController extends BaseController {
      * this action method will be called for reading certificate with id
      * @return CompletionStage of Result
      */
-    public CompletionStage<Result> read(String id) {
+    public CompletionStage<Result> read(String id, Http.Request httpRequest) {
         IRequestValidator requestValidator = new CertReadRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     req.getRequest().put(JsonKeys.ID, id);
@@ -131,15 +140,26 @@ public class CertificateController extends BaseController {
     }
 
 
-    public CompletionStage<Result> search()
+    public CompletionStage<Result> search(Http.Request httpRequest)
     {
         IRequestValidator requestValidator=new CertSearchRequestValidator();
-        return handleRequest(request(),
+        return handleRequest(certificationActorRef, httpRequest,
                 request -> {
                     Request req = (Request) request;
                     requestValidator.validate(req);
                     return null;
                 }, JsonKeys.SEARCH);
     }
+  
+  public CompletionStage<Result> searchV2(Http.Request httpRequest)
+  {
+    IRequestValidator requestValidator=new CertSearchRequestValidator();
+    return handleRequest(certificationActorRef, httpRequest,
+      request -> {
+        Request req = (Request) request;
+        requestValidator.validate(req);
+        return null;
+      }, JsonKeys.SEARCH_V2);
+  }
 
 }

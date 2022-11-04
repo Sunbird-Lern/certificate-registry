@@ -36,7 +36,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
         Host.class,
         InetAddress.class
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "jdk.internal.reflect.*"})
 public class ConnectionManagerImplTest {
  PropertiesCache cache = null;
 

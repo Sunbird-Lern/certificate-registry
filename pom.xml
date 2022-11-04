@@ -15,7 +15,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <jackson.version>2.9.10</jackson.version>
-        <akka.x.version>2.6.0-M2</akka.x.version>
+        <akka.x.version>2.5.22</akka.x.version>
         <junit.version>4.12</junit.version>
 
         <version.compiler.plugin>2.3.1</version.compiler.plugin>
@@ -24,10 +24,12 @@
         <logback.version>1.0.7</logback.version>
 
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <play2.version>2.6.5</play2.version>
-        <scala.version>2.12.8</scala.version>
-        <powermock.version>1.6.5</powermock.version>
+        <play2.version>2.7.2</play2.version>
+        <scala.version>2.11.12</scala.version>
+        <scala.major.version>2.11</scala.major.version>
+        <powermock.version>1.7.4</powermock.version>
         <httpClient.version>4.5.1</httpClient.version>
+        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
     </properties>
 
     <modules>
@@ -35,7 +37,6 @@
         <module>cassandra-utils</module>
         <module>sb-es-utils</module>
         <module>all-actors</module>
-        <module>sb-actor</module>
         <module>service</module>
     </modules>
 </project>

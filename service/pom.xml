@@ -24,6 +24,12 @@
     </pluginRepositories>
     <dependencies>
         <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-netty-server_${scala.major.version}</artifactId>
+            <version>${play2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
@@ -35,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play_2.12</artifactId>
+            <artifactId>play_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
             <exclusions>
                 <exclusion>
@@ -46,11 +52,15 @@
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-java8-compat_2.11</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-guice_2.12</artifactId>
+            <artifactId>play-guice_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
         </dependency>
         <dependency>
@@ -65,18 +75,18 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-akka-http-server_2.12</artifactId>
+            <artifactId>play-akka-http-server_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-remote_2.12</artifactId>
+            <artifactId>akka-remote_${scala.major.version}</artifactId>
             <version>${akka.x.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>filters-helpers_2.12</artifactId>
+            <artifactId>filters-helpers_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
         </dependency>
         <dependency>
@@ -107,8 +117,8 @@
         <!--Play Helper Class for Testing Controllers-->
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play-test_2.12</artifactId>
-            <version>2.6.7</version>
+            <artifactId>play-test_${scala.major.version}</artifactId>
+            <version>${play2.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -134,7 +144,7 @@
             <plugin>
                 <groupId>com.google.code.play2-maven-plugin</groupId>
                 <artifactId>play2-maven-plugin</artifactId>
-                <version>1.0.0-rc1</version>
+                <version>1.0.0-rc5</version>
                 <extensions>true</extensions>
                 <configuration>
                     <!-- if using controllers without dependency injection; default value is "injected" -->
@@ -149,10 +159,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -169,7 +178,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>${jacoco.maven.plugin.version}</version>
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>

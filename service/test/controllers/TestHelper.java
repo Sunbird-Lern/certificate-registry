@@ -6,7 +6,9 @@ import static play.test.Helpers.route;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import play.libs.Json;
@@ -42,7 +44,8 @@ public class TestHelper extends WithApplication {
     } else {
       req = new Http.RequestBuilder().uri(url).method(method);
     }
-    req.headers(headerMap);
+    Http.Headers headers = new Http.Headers(headerMap);
+    req.headers(headers);
     Result result = route(fakeApplication(), req);
     return result;
   }
@@ -80,10 +83,10 @@ public class TestHelper extends WithApplication {
    *
    * @return
    */
-  public Map<String, String[]> getHeaderMap() {
-    Map<String, String[]> headerMap = new HashMap<>();
-    headerMap.put("x-authenticated-user-token", new String[] {"Some authenticated user ID"});
-    headerMap.put("Authorization", new String[] {"Bearer ...."});
+  public Map<String, List<String>> getHeaderMap() {
+    Map<String, List<String>> headerMap = new HashMap<>();
+    headerMap.put("x-authenticated-user-token", Arrays.asList("Some authenticated user ID"));
+    headerMap.put("Authorization", Arrays.asList("Bearer ...."));
     return headerMap;
   }
 }
