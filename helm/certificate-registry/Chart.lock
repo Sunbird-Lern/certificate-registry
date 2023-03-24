@@ -1,0 +1,6 @@
+dependencies:
+- name: common_opa_policies
+  repository: https://keshavprasadms.github.io/sunbird-helmchart-templates
+  version: 0.1.0
+digest: sha256:fb94ed1624e01832abd825864af21aaa231a602afc052186fc56eca5da35dc3a
+generated: "2023-03-16T10:42:36.502567779+05:30"
