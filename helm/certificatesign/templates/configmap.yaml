@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+
+  {{/* This section has variables which in turn contain one or more mandatory variables */}}
+  {{/* This section has variables with default values */}}
+  CERTIFICATE_DOMAIN_URL: {{ .Values.CERTIFICATE_DOMAIN_URL }}
+  CACHE_CONTEXT_URLS: {{ .Values.CACHE_CONTEXT_URLS }}
+  CERTIFICATE_PRIVATE_KEY: {{ .Values.CERTIFICATE_PRIVATE_KEY | trimSuffix "\n" | quote  }}
+  CERTIFICATE_PUBLIC_KEY: {{ .Values.CERTIFICATE_PUBLIC_KEY | quote }}
+  SIGNING_KEY_TYPE: {{ .Values.SIGNING_KEY_TYPE }}
+  PORT: {{ .Values.PORT | quote }}
+  QR_TYPE: {{ .Values.QR_TYPE }}
+  
+  

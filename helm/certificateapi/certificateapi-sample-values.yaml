@@ -1,0 +1,8 @@
+## This section has mandatory variables
+## You must provide a value for these
+## If you don't provide a value for these variables, the chart installation will not proceed
+
+## This section has variables with default values
+## These are standard defaults that work well
+## You can override these if you have a use case for it
+domain: https://test.com
