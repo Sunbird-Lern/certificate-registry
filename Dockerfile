@@ -1,8 +1,7 @@
 FROM sunbird/openjdk-java11-alpine:latest
 RUN apk update \
     && apk upgrade \
-    && apk add --no-cache unzip \
-    && apk add --no-cache curl \
+    && apk add --no-cache unzip curl \
     && adduser -u 1001 -h /home/sunbird/ -D sunbird \
     && mkdir -p /home/sunbird/ 
 ADD ./service-1.0.0-SNAPSHOT-dist.zip /home/sunbird/
