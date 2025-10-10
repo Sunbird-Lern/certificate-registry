@@ -41,7 +41,7 @@ This repository has been upgraded from Play Framework 2.7.2 with Akka 2.5.22 to 
 - service POM: Updated Play and Pekko dependencies
 
 ### Source Code (15 Java files)
-- Replaced 24 Akka import statements with Pekko equivalents
+- Replaced Akka import statements with Pekko equivalents
 - Package changes: akka.* to org.apache.pekko.*
 - Files updated: BaseActor, CertificationActor, controllers, utilities, tests
 
@@ -80,14 +80,6 @@ All modules compile successfully:
 
 Dependency tree verified: No Akka dependencies, only Scala 2.13.12 present.
 
-## Testing
-
-Run tests:
-```
-mvn test
-```
-
-Note: Some PowerMock tests may require Java 17 compatibility adjustments (unrelated to this migration).
 
 ## Migration Impact
 
