@@ -32,23 +32,6 @@ This repository has been upgraded from Play Framework 2.7.2 with Akka 2.5.22 to 
 2. Security: Play 2.7.2 and Akka 2.5.22 no longer receive security updates.
 3. Modernization: Access to latest features and performance improvements.
 
-## Changes Made
-
-### Dependencies (4 POM files)
-- Parent POM: Updated version properties
-- all-actors POM: Replaced Akka with Pekko dependencies
-- sb-es-utils POM: Updated Akka to Pekko
-- service POM: Updated Play and Pekko dependencies
-
-### Source Code (15 Java files)
-- Replaced Akka import statements with Pekko equivalents
-- Package changes: akka.* to org.apache.pekko.*
-- Files updated: BaseActor, CertificationActor, controllers, utilities, tests
-
-### Configuration (1 file)
-- application.conf: Changed akka namespace to pekko
-- Updated all class references and logger configurations
-
 ### Play 3.0 API Updates
 - ActorStartModule: Changed from AkkaGuiceSupport to PekkoGuiceSupport
 - RequestHandler: Updated FutureConverters for Scala 2.13
