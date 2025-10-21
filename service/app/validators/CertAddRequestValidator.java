@@ -50,14 +50,16 @@ public class CertAddRequestValidator implements IRequestValidator {
     }
 
     private void validateMandatoryJsonData() throws BaseException {
-        if(MapUtils.isEmpty((Map)request.getRequest().get(JsonKeys.JSON_DATA))){
+        Object jsonDataObj = request.getRequest().get(JsonKeys.JSON_DATA);
+        if(jsonDataObj == null || (jsonDataObj instanceof Map && MapUtils.isEmpty((Map)jsonDataObj))){
             logger.error("CertAddRequestValidator:validateMandatoryJsonData:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.EMPTY_MANDATORY_PARAM,null),JsonKeys.JSON_DATA), ResponseCode.CLIENT_ERROR.getCode());
         }
         validateDataType();
     }
     private void validateDataType() throws BaseException {
-        if (!(request.get(JsonKeys.JSON_DATA) instanceof Map)) {
+        Object jsonDataObj = request.get(JsonKeys.JSON_DATA);
+        if (!(jsonDataObj instanceof Map)) {
             logger.error("CertAddRequestValidator:validateDataType:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.JSON_DATA,"map"), ResponseCode.CLIENT_ERROR.getCode());
 
@@ -92,10 +94,11 @@ public class CertAddRequestValidator implements IRequestValidator {
 
 
     private void validateRelatedObject() throws BaseException {
-        if(!(request.getRequest().get(JsonKeys.RELATED) instanceof Map)){
+        Object relatedObj = request.getRequest().get(JsonKeys.RELATED);
+        if(!(relatedObj instanceof Map)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.RELATED,"map"), ResponseCode.CLIENT_ERROR.getCode());
         }
-        Map<String,Object>relatedMap=(Map)request.getRequest().get(JsonKeys.RELATED);
+        Map<String,Object>relatedMap=(Map)relatedObj;
         if(!relatedMap.containsKey(JsonKeys.TYPE)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.TYPE.concat(" inside related map")), ResponseCode.CLIENT_ERROR.getCode());
         }
