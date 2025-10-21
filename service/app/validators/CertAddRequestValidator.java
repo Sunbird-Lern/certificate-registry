@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import scala.jdk.javaapi.CollectionConverters;
 
 /**
  * this is a validator class for adding certificates
@@ -51,7 +52,15 @@ public class CertAddRequestValidator implements IRequestValidator {
 
     private void validateMandatoryJsonData() throws BaseException {
         Object jsonDataObj = request.getRequest().get(JsonKeys.JSON_DATA);
-        if(jsonDataObj == null || (jsonDataObj instanceof Map && MapUtils.isEmpty((Map)jsonDataObj))){
+        Map<?, ?> jsonDataMap = null;
+        if (jsonDataObj instanceof scala.collection.Map) {
+            // Convert Scala Map to Java Map
+            jsonDataMap = CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
+        } else if (jsonDataObj instanceof Map) {
+            // Already a Java Map
+            jsonDataMap = (Map<?, ?>) jsonDataObj;
+        }
+        if(MapUtils.isEmpty(jsonDataMap)){
             logger.error("CertAddRequestValidator:validateMandatoryJsonData:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.EMPTY_MANDATORY_PARAM,null),JsonKeys.JSON_DATA), ResponseCode.CLIENT_ERROR.getCode());
         }
@@ -59,7 +68,7 @@ public class CertAddRequestValidator implements IRequestValidator {
     }
     private void validateDataType() throws BaseException {
         Object jsonDataObj = request.get(JsonKeys.JSON_DATA);
-        if (!(jsonDataObj instanceof Map)) {
+        if (!(jsonDataObj instanceof Map) && !(jsonDataObj instanceof scala.collection.Map)) {
             logger.error("CertAddRequestValidator:validateDataType:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.JSON_DATA,"map"), ResponseCode.CLIENT_ERROR.getCode());
 
@@ -95,10 +104,15 @@ public class CertAddRequestValidator implements IRequestValidator {
 
     private void validateRelatedObject() throws BaseException {
         Object relatedObj = request.getRequest().get(JsonKeys.RELATED);
-        if(!(relatedObj instanceof Map)){
+        if(!(relatedObj instanceof Map) && !(relatedObj instanceof scala.collection.Map)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.RELATED,"map"), ResponseCode.CLIENT_ERROR.getCode());
         }
-        Map<String,Object>relatedMap=(Map)relatedObj;
+        Map<String, Object> relatedMap = null;
+        if (relatedObj instanceof scala.collection.Map) {
+            relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
+        } else if (relatedObj instanceof Map) {
+            relatedMap = (Map<String, Object>) relatedObj;
+        }
         if(!relatedMap.containsKey(JsonKeys.TYPE)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.TYPE.concat(" inside related map")), ResponseCode.CLIENT_ERROR.getCode());
         }
