@@ -27,6 +27,7 @@ import org.sunbird.response.Response;
 import org.sunbird.service.ICertService;
 import org.sunbird.utilities.CertificateUtil;
 import org.sunbird.utilities.ESResponseMapper;
+import scala.jdk.javaapi.CollectionConverters;
 
 import java.io.IOException;
 import java.net.URL;
@@ -127,6 +128,14 @@ public class CertsServiceImpl implements ICertService {
         return CertificateUtil.insertRecord(recordMap, certBackgroundActorRef);
     }
     private Certificate getCertificate(Map<String, Object> certReqAddMap) {
+        Object relatedObj = certReqAddMap.get(JsonKeys.RELATED);
+        Map<String, Object> relatedMap = null;
+        if (relatedObj instanceof scala.collection.Map) {
+            relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
+        } else if (relatedObj instanceof Map) {
+            relatedMap = (Map<String, Object>) relatedObj;
+        }
+        
         Certificate certificate = new Certificate.Builder()
                 .setId((String) certReqAddMap.get(JsonKeys.ID))
                 .setData(getData(certReqAddMap))
@@ -134,7 +143,7 @@ public class CertsServiceImpl implements ICertService {
                 .setAccessCode((String)certReqAddMap.get(JsonKeys.ACCESS_CODE))
                 .setJsonUrl((String)certReqAddMap.get(JsonKeys.JSON_URL))
                 .setRecipient(getCompositeReciepientObject(certReqAddMap))
-                .setRelated((Map)certReqAddMap.get(JsonKeys.RELATED))
+                .setRelated(relatedMap)
                 .setReason((String)certReqAddMap.get(JsonKeys.REASON))
                 .build();
         logger.info("CertsServiceImpl:getCertificate:certificate object formed.");
@@ -150,7 +159,13 @@ public class CertsServiceImpl implements ICertService {
     }
 
     private Map<String, Object> getData(Map<String, Object> certAddRequestMap) {
-        return (Map) certAddRequestMap.get(JsonKeys.JSON_DATA);
+        Object jsonDataObj = certAddRequestMap.get(JsonKeys.JSON_DATA);
+        if (jsonDataObj instanceof scala.collection.Map) {
+            return (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
+        } else if (jsonDataObj instanceof Map) {
+            return (Map<String, Object>) jsonDataObj;
+        }
+        return null;
     }
 
     @Override
