@@ -520,7 +520,6 @@ public class CertsServiceImpl implements ICertService {
     private ESResponseMapper searchEsPostCall(Request request) throws BaseException {
         ESResponseMapper mappedResponse = null;
         try {
-            // Convert Scala Map to Java Map before serialization
             Object requestObj = request.getRequest();
             Map<String, Object> javaRequestMap = null;
             if (requestObj instanceof scala.collection.Map) {

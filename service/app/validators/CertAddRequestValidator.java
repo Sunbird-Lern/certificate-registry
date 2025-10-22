@@ -54,10 +54,8 @@ public class CertAddRequestValidator implements IRequestValidator {
         Object jsonDataObj = request.getRequest().get(JsonKeys.JSON_DATA);
         Map<?, ?> jsonDataMap = null;
         if (jsonDataObj instanceof scala.collection.Map) {
-            // Convert Scala Map to Java Map
             jsonDataMap = CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
         } else if (jsonDataObj instanceof Map) {
-            // Already a Java Map
             jsonDataMap = (Map<?, ?>) jsonDataObj;
         }
         if(MapUtils.isEmpty(jsonDataMap)){
