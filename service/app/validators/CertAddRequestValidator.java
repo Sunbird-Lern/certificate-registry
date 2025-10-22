@@ -58,7 +58,7 @@ public class CertAddRequestValidator implements IRequestValidator {
         } else if (jsonDataObj instanceof Map) {
             jsonDataMap = (Map<?, ?>) jsonDataObj;
         }
-        if(jsonDataMap != null && MapUtils.isEmpty(jsonDataMap)){
+        if(jsonDataMap == null || MapUtils.isEmpty(jsonDataMap)){
             logger.error("CertAddRequestValidator:validateMandatoryJsonData:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.EMPTY_MANDATORY_PARAM,null),JsonKeys.JSON_DATA), ResponseCode.CLIENT_ERROR.getCode());
         }
@@ -113,9 +113,6 @@ public class CertAddRequestValidator implements IRequestValidator {
             relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
         } else if (relatedObj instanceof Map) {
             relatedMap = (Map<String, Object>) relatedObj;
-        }
-        if (relatedMap == null) {
-            throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null), JsonKeys.RELATED, "map"), ResponseCode.CLIENT_ERROR.getCode());
         }
         if(!relatedMap.containsKey(JsonKeys.TYPE)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.TYPE.concat(" inside related map")), ResponseCode.CLIENT_ERROR.getCode());

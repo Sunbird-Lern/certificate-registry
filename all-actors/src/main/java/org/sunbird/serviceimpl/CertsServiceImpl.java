@@ -129,6 +129,9 @@ public class CertsServiceImpl implements ICertService {
     }
     private Certificate getCertificate(Map<String, Object> certReqAddMap) {
         Object relatedObj = certReqAddMap.get(JsonKeys.RELATED);
+        if (relatedObj == null) {
+            throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.RELATED), ResponseCode.CLIENT_ERROR.getCode());
+        }
         Map<String, Object> relatedMap = null;
         if (relatedObj instanceof scala.collection.Map) {
             relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
