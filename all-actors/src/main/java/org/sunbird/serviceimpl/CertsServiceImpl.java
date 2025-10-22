@@ -165,7 +165,11 @@ public class CertsServiceImpl implements ICertService {
         } else if (jsonDataObj instanceof Map) {
             return (Map<String, Object>) jsonDataObj;
         }
-        return null;
+        throw new BaseException(
+                IResponseMessage.INVALID_REQUESTED_DATA,
+                "Invalid type for JSON_DATA: expected Scala Map or Java Map, but got "
+                        + (jsonDataObj == null ? "null" : jsonDataObj.getClass().getName()),
+                ResponseCode.CLIENT_ERROR.getCode());
     }
 
     @Override
@@ -527,7 +531,13 @@ public class CertsServiceImpl implements ICertService {
             } else if (requestObj instanceof Map) {
                 javaRequestMap = (Map<String, Object>) requestObj;
             }
-            
+            if (javaRequestMap == null) {
+                logger.error(
+                        "CertsServiceImpl:searchEsPostCall: request object is not a valid Map. Cannot convert to request body.");
+                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,
+                        "Request object is not a valid Map. Cannot convert to request body.",
+                        ResponseCode.CLIENT_ERROR.getCode());
+            }
             String requestBody = requestMapper.writeValueAsString(javaRequestMap);
             logger.info("CertsServiceImpl:search:request body found.");
             String apiToCall = CertVars.getEsSearchUri();
