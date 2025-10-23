@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import scala.jdk.javaapi.CollectionConverters;
 
 /**
  * this is a validator class for adding certificates
@@ -50,14 +51,22 @@ public class CertAddRequestValidator implements IRequestValidator {
     }
 
     private void validateMandatoryJsonData() throws BaseException {
-        if(MapUtils.isEmpty((Map)request.getRequest().get(JsonKeys.JSON_DATA))){
+        Object jsonDataObj = request.getRequest().get(JsonKeys.JSON_DATA);
+        Map<?, ?> jsonDataMap = null;
+        if (jsonDataObj instanceof scala.collection.Map) {
+            jsonDataMap = CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
+        } else if (jsonDataObj instanceof Map) {
+            jsonDataMap = (Map<?, ?>) jsonDataObj;
+        }
+        if(jsonDataMap == null || MapUtils.isEmpty(jsonDataMap)){
             logger.error("CertAddRequestValidator:validateMandatoryJsonData:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.EMPTY_MANDATORY_PARAM,null),JsonKeys.JSON_DATA), ResponseCode.CLIENT_ERROR.getCode());
         }
         validateDataType();
     }
     private void validateDataType() throws BaseException {
-        if (!(request.get(JsonKeys.JSON_DATA) instanceof Map)) {
+        Object jsonDataObj = request.get(JsonKeys.JSON_DATA);
+        if (!(jsonDataObj instanceof Map) && !(jsonDataObj instanceof scala.collection.Map)) {
             logger.error("CertAddRequestValidator:validateDataType:incorrect request provided");
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.JSON_DATA,"map"), ResponseCode.CLIENT_ERROR.getCode());
 
@@ -92,10 +101,19 @@ public class CertAddRequestValidator implements IRequestValidator {
 
 
     private void validateRelatedObject() throws BaseException {
-        if(!(request.getRequest().get(JsonKeys.RELATED) instanceof Map)){
+        Object relatedObj = request.getRequest().get(JsonKeys.RELATED);
+        if (relatedObj == null) {
+            throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.RELATED), ResponseCode.CLIENT_ERROR.getCode());
+        }
+        if(!(relatedObj instanceof Map) && !(relatedObj instanceof scala.collection.Map)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.DATA_TYPE_ERROR,null),JsonKeys.RELATED,"map"), ResponseCode.CLIENT_ERROR.getCode());
         }
-        Map<String,Object>relatedMap=(Map)request.getRequest().get(JsonKeys.RELATED);
+        Map<String, Object> relatedMap = null;
+        if (relatedObj instanceof scala.collection.Map) {
+            relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
+        } else if (relatedObj instanceof Map) {
+            relatedMap = (Map<String, Object>) relatedObj;
+        }
         if(!relatedMap.containsKey(JsonKeys.TYPE)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.TYPE.concat(" inside related map")), ResponseCode.CLIENT_ERROR.getCode());
         }
