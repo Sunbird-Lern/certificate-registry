@@ -114,6 +114,11 @@ public class CertAddRequestValidator implements IRequestValidator {
         } else if (relatedObj instanceof Map) {
             relatedMap = (Map<String, Object>) relatedObj;
         }
+        if (relatedMap == null) {
+            throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, 
+                MessageFormat.format(getLocalizedMessage(IResponseMessage.INVALID_RELATED_TYPE, null), "unexpected type"), 
+                ResponseCode.CLIENT_ERROR.getCode());
+        }
         if(!relatedMap.containsKey(JsonKeys.TYPE)){
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.TYPE.concat(" inside related map")), ResponseCode.CLIENT_ERROR.getCode());
         }
