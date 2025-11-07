@@ -127,7 +127,7 @@ public class CertsServiceImpl implements ICertService {
         Map<String,Object>recordMap= requestMapper.convertValue(certificate,Map.class);
         return CertificateUtil.insertRecord(recordMap, certBackgroundActorRef);
     }
-    private Certificate getCertificate(Map<String, Object> certReqAddMap) {
+    private Certificate getCertificate(Map<String, Object> certReqAddMap) throws BaseException {
         Object relatedObj = certReqAddMap.get(JsonKeys.RELATED);
         if (relatedObj == null) {
             throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.RELATED), ResponseCode.CLIENT_ERROR.getCode());
@@ -161,7 +161,7 @@ public class CertsServiceImpl implements ICertService {
     return recipient;
     }
 
-    private Map<String, Object> getData(Map<String, Object> certAddRequestMap) {
+    private Map<String, Object> getData(Map<String, Object> certAddRequestMap) throws BaseException {
         Object jsonDataObj = certAddRequestMap.get(JsonKeys.JSON_DATA);
         if (jsonDataObj instanceof scala.collection.Map) {
             return (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
