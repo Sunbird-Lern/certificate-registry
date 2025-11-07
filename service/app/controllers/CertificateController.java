@@ -1,6 +1,6 @@
 package controllers;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import org.sunbird.JsonKeys;
 import org.sunbird.request.Request;
 import play.mvc.Http;

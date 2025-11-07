@@ -1,9 +1,9 @@
 package controllers;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSelection;
+import org.apache.pekko.pattern.Patterns;
+import org.apache.pekko.util.Timeout;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -17,7 +17,7 @@ import org.sunbird.response.ResponseParams;
 import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Results;
-import scala.compat.java8.FutureConverters;
+import scala.jdk.javaapi.FutureConverters;
 import scala.concurrent.Future;
 import utils.JsonKey;
 
@@ -46,7 +46,7 @@ public class RequestHandler extends BaseController {
         } else {
             future = Patterns.ask((ActorSelection) actorRef, request, t);
         }
-        return FutureConverters.toJava(future).thenApplyAsync(fn);
+        return FutureConverters.asJava(future).thenApplyAsync(fn);
     }
 
     /**

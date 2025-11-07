@@ -1,7 +1,7 @@
 package org.sunbird.service;
 
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.sunbird.BaseException;
 import org.sunbird.request.Request;

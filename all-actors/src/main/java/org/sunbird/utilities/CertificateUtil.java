@@ -1,6 +1,6 @@
 package org.sunbird.utilities;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
