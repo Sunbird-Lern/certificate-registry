@@ -6,7 +6,8 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteResponse;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -121,7 +122,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
           }
         };
 
-    ConnectionManager.getRestClient().indexAsync(indexRequest, listener);
+    ConnectionManager.getRestClient().indexAsync(indexRequest, RequestOptions.DEFAULT, listener);
 
     return promise.future();
   }
@@ -173,7 +174,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
               promise.failure(e);
             }
           };
-      ConnectionManager.getRestClient().updateAsync(updateRequest, listener);
+      ConnectionManager.getRestClient().updateAsync(updateRequest, RequestOptions.DEFAULT, listener);
     return promise.future();
   }
 
@@ -226,7 +227,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
             }
           };
 
-      ConnectionManager.getRestClient().getAsync(getRequest, listener);
+      ConnectionManager.getRestClient().getAsync(getRequest, RequestOptions.DEFAULT, listener);
     return promise.future();
   }
 
@@ -268,7 +269,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
             }
           };
 
-      ConnectionManager.getRestClient().deleteAsync(delRequest, listener);
+      ConnectionManager.getRestClient().deleteAsync(delRequest, RequestOptions.DEFAULT, listener);
     logger.info(
         "ElasticSearchRestHighImpl:delete: method end =="
             + " ,Total time elapsed = "
@@ -382,7 +383,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
           public void onResponse(SearchResponse response) {
             logger.info(
                 "ElasticSearchRestHighImpl:search:onResponse  response1 = " + response);
-            if (response.getHits() == null || response.getHits().getTotalHits() == 0) {
+            if (response.getHits() == null || response.getHits().getTotalHits().value == 0) {
 
               Map<String, Object> responseMap = new HashMap<>();
               List<Map<String, Object>> esSource = new ArrayList<>();
@@ -414,7 +415,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
           }
         };
 
-    ConnectionManager.getRestClient().searchAsync(searchRequest, listener);
+    ConnectionManager.getRestClient().searchAsync(searchRequest, RequestOptions.DEFAULT, listener);
     return promise.future();
   }
 
@@ -427,7 +428,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
   public Future<Boolean> healthCheck() {
 
     GetIndexRequest indexRequest =
-        new GetIndexRequest().indices(ESType.cert.getTypeName());
+        new GetIndexRequest(ESType.cert.getTypeName());
     Promise<Boolean> promise = Futures.promise();
     ActionListener<Boolean> listener =
         new ActionListener<Boolean>() {
@@ -447,7 +448,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
                 "ElasticSearchRestHighImpl:healthCheck: error " + e.getMessage() );
           }
         };
-    ConnectionManager.getRestClient().indices().existsAsync(indexRequest, listener);
+    ConnectionManager.getRestClient().indices().existsAsync(indexRequest, RequestOptions.DEFAULT, listener);
 
     return promise.future();
   }
@@ -500,7 +501,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
             promise.success(false);
           }
         };
-    ConnectionManager.getRestClient().bulkAsync(request, listener);
+    ConnectionManager.getRestClient().bulkAsync(request, RequestOptions.DEFAULT, listener);
 
     logger.info(
         "ElasticSearchRestHighImpl:bulkInsert: method end =="
@@ -589,7 +590,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
               promise.failure(e);
             }
           };
-      ConnectionManager.getRestClient().updateAsync(updateRequest, listener);
+      ConnectionManager.getRestClient().updateAsync(updateRequest, RequestOptions.DEFAULT, listener);
       return promise.future();
   }
 
