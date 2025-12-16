@@ -4,6 +4,7 @@ import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import org.apache.commons.collections.CollectionUtils;
@@ -49,6 +50,7 @@ public class CertsServiceImpl implements ICertService {
     static Map<String, String> headerMap = new HashMap<>();
     static {
         headerMap.put("Content-Type", "application/json");
+        requestMapper.registerModule(new DefaultScalaModule());
     }
 
     @Override
@@ -528,21 +530,7 @@ public class CertsServiceImpl implements ICertService {
         ESResponseMapper mappedResponse = null;
         try {
             Object requestObj = request.getRequest();
-            Map<String, Object> javaRequestMap = null;
-            if (requestObj instanceof scala.collection.Map) {
-                javaRequestMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) requestObj);
-            } else if (requestObj instanceof Map) {
-                javaRequestMap = (Map<String, Object>) requestObj;
-            }
-            if (javaRequestMap == null) {
-                logger.error(
-                        "CertsServiceImpl:searchEsPostCall: request object is not a valid Map. Cannot convert to request body.");
-                throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA,
-                        "Request object is not a valid Map. Cannot convert to request body.",
-                        ResponseCode.CLIENT_ERROR.getCode());
-            }
-            String requestBody = requestMapper.writeValueAsString(javaRequestMap);
-            logger.info("CertsServiceImpl:search:request body found.");
+            String requestBody = requestMapper.writeValueAsString(requestObj);
             String apiToCall = CertVars.getEsSearchUri();
             logger.info("CertsServiceImpl:search:complete url found: " + apiToCall);
             Future<HttpResponse<JsonNode>> responseFuture = CertificateUtil.makeAsyncPostCall(apiToCall, requestBody, headerMap);
@@ -550,7 +538,7 @@ public class CertsServiceImpl implements ICertService {
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
                 String jsonArray = jsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
                 Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
-                mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
+                mappedResponse = requestMapper.convertValue(apiResp, ESResponseMapper.class);
             } else {
                 logger.error("CertsServiceImpl:searchEsPostCall: Invalid request data ");
                 throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());

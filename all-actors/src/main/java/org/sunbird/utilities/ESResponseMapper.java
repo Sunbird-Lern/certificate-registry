@@ -15,9 +15,13 @@ public class ESResponseMapper {
     @JsonCreator
     public ESResponseMapper(
             @JsonProperty("hits") List<Map<String,Object>>content,
-            @JsonProperty("total") int count) {
+            @JsonProperty("total") Object total) {
         this.content = content;
-        this.count = count;
+        if (total instanceof Integer) {
+            this.count = (int) total;
+        } else if (total instanceof Map) {
+            this.count = (int) ((Map) total).get("value");
+        }
     }
     
     public ESResponseMapper() {}
