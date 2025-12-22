@@ -1,9 +1,10 @@
 package org.sunbird.serviceimpl;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import org.apache.commons.collections.CollectionUtils;
@@ -27,6 +28,7 @@ import org.sunbird.response.Response;
 import org.sunbird.service.ICertService;
 import org.sunbird.utilities.CertificateUtil;
 import org.sunbird.utilities.ESResponseMapper;
+import scala.jdk.javaapi.CollectionConverters;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,6 +50,7 @@ public class CertsServiceImpl implements ICertService {
     static Map<String, String> headerMap = new HashMap<>();
     static {
         headerMap.put("Content-Type", "application/json");
+        requestMapper.registerModule(new DefaultScalaModule());
     }
 
     @Override
@@ -126,7 +129,18 @@ public class CertsServiceImpl implements ICertService {
         Map<String,Object>recordMap= requestMapper.convertValue(certificate,Map.class);
         return CertificateUtil.insertRecord(recordMap, certBackgroundActorRef);
     }
-    private Certificate getCertificate(Map<String, Object> certReqAddMap) {
+    private Certificate getCertificate(Map<String, Object> certReqAddMap) throws BaseException {
+        Object relatedObj = certReqAddMap.get(JsonKeys.RELATED);
+        if (relatedObj == null) {
+            throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, MessageFormat.format(getLocalizedMessage(IResponseMessage.MISSING_MANDATORY_PARAMS,null), JsonKeys.RELATED), ResponseCode.CLIENT_ERROR.getCode());
+        }
+        Map<String, Object> relatedMap = null;
+        if (relatedObj instanceof scala.collection.Map) {
+            relatedMap = (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) relatedObj);
+        } else if (relatedObj instanceof Map) {
+            relatedMap = (Map<String, Object>) relatedObj;
+        }
+        
         Certificate certificate = new Certificate.Builder()
                 .setId((String) certReqAddMap.get(JsonKeys.ID))
                 .setData(getData(certReqAddMap))
@@ -134,7 +148,7 @@ public class CertsServiceImpl implements ICertService {
                 .setAccessCode((String)certReqAddMap.get(JsonKeys.ACCESS_CODE))
                 .setJsonUrl((String)certReqAddMap.get(JsonKeys.JSON_URL))
                 .setRecipient(getCompositeReciepientObject(certReqAddMap))
-                .setRelated((Map)certReqAddMap.get(JsonKeys.RELATED))
+                .setRelated(relatedMap)
                 .setReason((String)certReqAddMap.get(JsonKeys.REASON))
                 .build();
         logger.info("CertsServiceImpl:getCertificate:certificate object formed.");
@@ -149,8 +163,18 @@ public class CertsServiceImpl implements ICertService {
     return recipient;
     }
 
-    private Map<String, Object> getData(Map<String, Object> certAddRequestMap) {
-        return (Map) certAddRequestMap.get(JsonKeys.JSON_DATA);
+    private Map<String, Object> getData(Map<String, Object> certAddRequestMap) throws BaseException {
+        Object jsonDataObj = certAddRequestMap.get(JsonKeys.JSON_DATA);
+        if (jsonDataObj instanceof scala.collection.Map) {
+            return (Map<String, Object>) CollectionConverters.asJava((scala.collection.Map<?, ?>) jsonDataObj);
+        } else if (jsonDataObj instanceof Map) {
+            return (Map<String, Object>) jsonDataObj;
+        }
+        throw new BaseException(
+                IResponseMessage.INVALID_REQUESTED_DATA,
+                "Invalid type for JSON_DATA: expected Scala Map or Java Map, but got "
+                        + (jsonDataObj == null ? "null" : jsonDataObj.getClass().getName()),
+                ResponseCode.CLIENT_ERROR.getCode());
     }
 
     @Override
@@ -505,8 +529,8 @@ public class CertsServiceImpl implements ICertService {
     private ESResponseMapper searchEsPostCall(Request request) throws BaseException {
         ESResponseMapper mappedResponse = null;
         try {
-            String requestBody = requestMapper.writeValueAsString(request.getRequest());
-            logger.info("CertsServiceImpl:search:request body found.");
+            Object requestObj = request.getRequest();
+            String requestBody = requestMapper.writeValueAsString(requestObj);
             String apiToCall = CertVars.getEsSearchUri();
             logger.info("CertsServiceImpl:search:complete url found: " + apiToCall);
             Future<HttpResponse<JsonNode>> responseFuture = CertificateUtil.makeAsyncPostCall(apiToCall, requestBody, headerMap);
@@ -514,7 +538,7 @@ public class CertsServiceImpl implements ICertService {
             if (jsonResponse != null && jsonResponse.getStatus() == HttpStatus.SC_OK) {
                 String jsonArray = jsonResponse.getBody().getObject().getJSONObject(JsonKeys.HITS).toString();
                 Map<String, Object> apiResp = requestMapper.readValue(jsonArray, Map.class);
-                mappedResponse = new ObjectMapper().convertValue(apiResp, ESResponseMapper.class);
+                mappedResponse = requestMapper.convertValue(apiResp, ESResponseMapper.class);
             } else {
                 logger.error("CertsServiceImpl:searchEsPostCall: Invalid request data ");
                 throw new BaseException(IResponseMessage.INVALID_REQUESTED_DATA, jsonResponse.getBody().toString(), ResponseCode.CLIENT_ERROR.getCode());

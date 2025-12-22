@@ -1,7 +1,7 @@
 package org.sunbird.common;
 
 
-import akka.util.Timeout;
+import org.apache.pekko.util.Timeout;
 import com.typesafe.config.Config;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -699,7 +699,7 @@ public class ElasticSearchHelper {
     long count = 0;
     if (response != null) {
       SearchHits hits = response.getHits();
-      count = hits.getTotalHits();
+      count = hits.getTotalHits().value;
 
       for (SearchHit hit : hits) {
         esSource.add(hit.getSourceAsMap());

@@ -23,4 +23,4 @@ RUNNING_PID
 all-actors/all-actors.iml
 play-seed-wo-router.iml
 sb-actor/sb-actor.iml
-sb-utils/sb-utils.iml
+sb-utils/sb-utils.iml*.tar.gz

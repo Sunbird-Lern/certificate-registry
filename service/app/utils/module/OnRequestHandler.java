@@ -14,7 +14,6 @@ import org.sunbird.JsonKeys;
 import play.http.ActionCreator;
 import play.mvc.Action;
 import play.mvc.Http;
-import play.mvc.Http.Context;
 import play.mvc.Result;
 /**
  * This class will be called on each request.
@@ -28,15 +27,13 @@ public class OnRequestHandler implements ActionCreator {
     public Action createAction(Http.Request request, Method method) {
         return new Action.Simple() {
             @Override
-            public CompletionStage<Result> call(Context context) {
-                Optional<String> requestIdHeader = request.getHeaders().get(JsonKeys.X_REQUEST_ID);
+            public CompletionStage<Result> call(Http.Request req) {
+                Optional<String> requestIdHeader = req.getHeaders().get(JsonKeys.X_REQUEST_ID);
                 String reqId = requestIdHeader.orElseGet(() -> UUID.randomUUID().toString());
                 MDC.clear();
                 MDC.put(JsonKeys.REQUEST_MESSAGE_ID, reqId);
-                request.getHeaders().addHeader(JsonKeys.REQUEST_MESSAGE_ID, reqId);
-                CompletionStage<Result> result = null;
                 logger.debug("On request method called");
-                result = delegate.call(context);
+                CompletionStage<Result> result = delegate.call(req);
                 return result.thenApply(res -> res.withHeader("Access-Control-Allow-Origin", "*"));
             }
         };

@@ -23,7 +23,7 @@
 	    <dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>6.8.22</version>
+			<version>7.10.2</version>
         </dependency>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -49,12 +49,12 @@
 		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<version>3.2.2</version>
 		</dependency>
 		<dependency>
-		<groupId>com.typesafe.akka</groupId>
-		<artifactId>akka-actor_${scala.major.version}</artifactId>
-		<version>${akka.x.version}</version>
+		<groupId>org.apache.pekko</groupId>
+		<artifactId>pekko-actor_${scala.major.version}</artifactId>
+		<version>${pekko.version}</version>
 		<scope>compile</scope>
 	</dependency>
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->

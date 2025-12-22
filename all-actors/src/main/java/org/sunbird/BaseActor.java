@@ -1,8 +1,8 @@
 package org.sunbird;
 
-import akka.actor.UntypedAbstractActor;
-import akka.event.DiagnosticLoggingAdapter;
-import akka.event.Logging;
+import org.apache.pekko.actor.UntypedAbstractActor;
+import org.apache.pekko.event.DiagnosticLoggingAdapter;
+import org.apache.pekko.event.Logging;
 import org.sunbird.message.IResponseMessage;
 import org.sunbird.message.Localizer;
 import org.sunbird.message.ResponseCode;
