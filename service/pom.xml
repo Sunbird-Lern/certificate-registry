@@ -38,12 +38,10 @@
         <dependency>
              <groupId>io.netty</groupId>
              <artifactId>netty-codec-http</artifactId>
-             <version>4.1.93.Final</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -55,6 +53,10 @@
             <artifactId>play_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.lz4</groupId>
+                    <artifactId>lz4-java</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-reflect</artifactId>
@@ -110,7 +112,6 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.112.Final</version>
         </dependency>
         <dependency>
             <groupId>org.playframework</groupId>
