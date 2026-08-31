@@ -284,20 +284,29 @@ public class CertsServiceImpl implements ICertService {
             try {
                 HttpResponse<JsonNode> rcJsonResponse = rcResponseFuture.get();
                 if (rcJsonResponse != null && rcJsonResponse.getStatus() == HttpStatus.SC_OK) {
-                    String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
-                    logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
-                    headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
-                    headerMap.put("template", templateUrl);
-                    HttpResponse<String> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
-                    if (rcDownloadResFuture != null && rcDownloadResFuture.getStatus() == HttpStatus.SC_OK) {
-                        logger.info("CertsServiceImpl:downloadV2: success: ");
-                        String responseBody = rcDownloadResFuture.getBody();
-                        if(responseBody != null) {
-                            response.put(JsonKeys.PRINT_URI, responseBody);
-                        }
+                    // If the sunbird-rc entity already carries a rendered printUri (filled by the
+                    // certificate generator), return it as-is. Re-rendering from the raw templateUrl
+                    // cannot fill "incredible" ${..} templates, so it would yield a blank certificate.
+                    String storedPrintUri = rcJsonResponse.getBody().getObject().optString(JsonKeys.PRINT_URI, "");
+                    if (StringUtils.isNotBlank(storedPrintUri)) {
+                        logger.info("CertsServiceImpl:downloadV2: returning stored printUri from sunbird-rc entity");
+                        response.put(JsonKeys.PRINT_URI, storedPrintUri);
                     } else {
-                        logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
-                        throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+                        String templateUrl = rcJsonResponse.getBody().getObject().getString(JsonKeys.TEMPLATE_URL);
+                        logger.info("CertsServiceImpl:downloadV2: templateUrl: "+templateUrl);
+                        headerMap.put(JsonKeys.ACCEPT, JsonKeys.IMAGE_SVG_XML);
+                        headerMap.put("template", templateUrl);
+                        HttpResponse<String> rcDownloadResFuture = CertificateUtil.makeAsyncGetCallString(rcApi, headerMap);
+                        if (rcDownloadResFuture != null && rcDownloadResFuture.getStatus() == HttpStatus.SC_OK) {
+                            logger.info("CertsServiceImpl:downloadV2: success: ");
+                            String responseBody = rcDownloadResFuture.getBody();
+                            if(responseBody != null) {
+                                response.put(JsonKeys.PRINT_URI, responseBody);
+                            }
+                        } else {
+                            logger.error("CertsServiceImpl:downloadV2:resource image is not found for certificate-id : " +certId);
+                            throw new BaseException(IResponseMessage.RESOURCE_NOT_FOUND, localizer.getMessage(IResponseMessage.RESOURCE_NOT_FOUND, null), ResponseCode.RESOURCE_NOT_FOUND.getCode());
+                        }
                     }
                 } else {
                     logger.error("CertsServiceImpl:downloadV2:resource template json not found for certificate-id : " +certId);
