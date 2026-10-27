@@ -73,4 +73,6 @@ public interface Constants {
   public static final String INSERT = "insert";
   public static final String STANDALONE_MODE = "standalone";
   public static final String IS_MULTI_DC_ENABLED = "isMultiDCEnabled";
+  public static final String SUNBIRD_CASSANDRA_SSL_ENABLED = "sunbird_cassandra_ssl_enabled";
+  public static final String SUNBIRD_CASSANDRA_SSL_ROOT_CERT = "sunbird_cassandra_sslrootcert";
 }
